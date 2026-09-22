@@ -38,6 +38,11 @@
     --text:var(--app-text-color);
 
     --green:#689461;
+
+    /* Линия ключевых знаков (галка "Показать стрелкой диезы\бемоли" под
+       ладами в "Обучении"): цвет линии, кружков и названий нот — один
+       для диезов и бемолей. */
+    --keysig-line:#4d9de0;
     --red:#ffcccc;
     --green-flash:#689461;
     --red-flash:rgba(255,204,204,0.5);
@@ -1464,6 +1469,9 @@
     align-items:center;
     align-self:flex-start;
     gap:6px;
+    font-family:var(--font);
+    font-size:16px;
+    color:var(--app-text-color);
   }
   /* Подпункт "Компактный вид" — тоже зависит от "Показывать клавиатуру" */
   #trainCompactPianoRow.disabled{
@@ -1508,6 +1516,31 @@
     stroke:var(--red);
     stroke-width:0.7px;
     font-size:1.25em;
+  }
+  /* Размер букв нот на круге "Обучения" — из настройки "Размер шрифта"
+     (под "Темой оформления"). Красный знак ♯/♭/♮ ("с бемолями\диезами")
+     = этот размер + число TRAIN_ACC_SIGN_FONT_SIZE_ADD в <script>.
+     Обе переменные пишутся из JS (applyTrainNoteFontSize). */
+  #trainCircle .selLabel{
+    font-size:var(--train-note-font-size, 14px);
+  }
+  #trainCircle .accSign{
+    font-size:var(--train-acc-sign-font-size, 18px);
+  }
+  /* поле ввода размера шрифта — как выпадашка темы: половина ширины справа */
+  .themeSelectRow input.fontSizeInput{
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
+    box-sizing:border-box;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:6px;
+    padding:8px 6px;
+    font-family:var(--font);
+    font-size:13px;
   }
   .invStyleOption{
     display:flex;
@@ -1963,6 +1996,20 @@
      (см. .chordGridCard .ringBtn ниже), но в 7 колонок в один ряд;
      шрифт чуть мельче общего 13px, чтобы влезли длинные названия
      ("Миксолидийский") без переноса кнопки на две строки. */
+  /* Галка "Показать стрелкой диезы\бемоли" — внутри сетки ладов,
+     отдельной строкой на всю ширину под кнопками ладов. */
+  #trainKeySigArcRow, #trainRealModeNotesRow{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:center;
+    width:fit-content;
+    gap:6px;
+    font-family:var(--font);
+    font-size:16px;
+    color:var(--app-text-color);
+    cursor:pointer;
+  }
+  #trainKeySigArcRow input, #trainRealModeNotesRow input{ cursor:pointer; }
   #trainModeGroups{
     margin-top:0;   /* было 10px — отступ легенда→лады теперь равен аккорды→легенда */
   }
@@ -2616,11 +2663,11 @@
             </select>
           </div>
           <div id="notesMidiInputSelectsContainer" class="midiInputSelectsContainer">
-            <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="notesMidiInputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select></div>
+            <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="notesMidiInputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select></div>
           </div>
           <div class="midiPanelRow">
             <label for="notesDawOutputSelect" data-i18n="midiOutputLabel">MIDI-выход</label>
-            <select id="notesDawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select>
+            <select id="notesDawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select>
           </div>
           <div id="notesMidiStatusLine" class="midiStatusLine"></div>
           <button type="button" class="noteBtn midiReconnectBtn" id="notesMidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI</button>
@@ -2769,39 +2816,39 @@
       <div id="level3ModeButtons" class="chordGridCard cols3 cofBox">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-          <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа&#10;&#10;@@тон тон тон полутон тон тон полутон@@&#10;&#10;в полутонах : @@222 122 1@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа&#10;&#10;@@Тон тон тон полутон тон тон полутон@@&#10;&#10;В полутонах : @@222 122 1@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMajorBtn" type="button" data-mode="major" data-i18n="modeMajor">Мажор</button>
-          <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа&#10;&#10;@@тон тон полутон тон тон тон полутон@@&#10;&#10;в полутонах : @@221 222 1@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа&#10;&#10;@@Тон тон полутон тон тон тон полутон@@&#10;&#10;В полутонах : @@221 222 1@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMixolydianBtn" type="button" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-          <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа&#10;&#10;@@тон тон полутон тон тон полутон тон@@&#10;&#10;в полутонах : @@221 221 2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа&#10;&#10;@@Тон тон полутон тон тон полутон тон@@&#10;&#10;В полутонах : @@221 221 2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeDorianBtn" type="button" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-          <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа&#10;&#10;@@тон полутон тон тон тон полутон тон@@&#10;&#10;в полутонах : @@212 221 2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа&#10;&#10;@@Тон полутон тон тон тон полутон тон@@&#10;&#10;В полутонах : @@212 221 2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMinorBtn" type="button" data-mode="minor" data-i18n="modeMinor">Минор</button>
-          <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа&#10;&#10;@@тон полутон тон тон полутон тон тон@@&#10;&#10;в полутонах : @@212 212 2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа&#10;&#10;@@Тон полутон тон тон полутон тон тон@@&#10;&#10;В полутонах : @@212 212 2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModePhrygianBtn" type="button" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-          <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа&#10;&#10;@@полутон тон тон тон полутон тон тон@@&#10;&#10;в полутонах : @@122 212 2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа&#10;&#10;@@Полутон тон тон тон полутон тон тон@@&#10;&#10;В полутонах : @@122 212 2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-          <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа&#10;&#10;@@полутон тон тон полутон тон тон тон@@&#10;&#10;в полутонах : @@122 122 2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа&#10;&#10;@@Полутон тон тон полутон тон тон тон@@&#10;&#10;В полутонах : @@122 122 2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
-          <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@тон полутон тон тон полутон полтора тона полутон@@&#10;&#10;в полутонах : @@212 213 1@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="Формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@Тон полутон тон тон полутон полтора тона полутон@@&#10;&#10;В полутонах : @@212 213 1@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
-          <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@тон полутон тон тон тон тон полутон@@&#10;&#10;в полутонах : @@212 222 1@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="Формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@Тон полутон тон тон тон тон полутон@@&#10;&#10;В полутонах : @@212 222 1@@">i</span>
         </div>
       </div>
 
@@ -2829,10 +2876,10 @@
           <span class="infoIcon" data-i18n-tip="tipInversions" data-tip="Обращения работают только для первого, второго и третьего обращений(если третье есть). Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@">i</span>
         </div>
         <div id="level3InvStyleRow" class="invStyleRow" style="margin-left:24px;">
-          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleAccCheckbox"><span data-i18n="invStyleAcc">с бемолями\диезами для больших аккордов</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
-          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleCorrectCheckbox"><span data-i18n="invStyleCorrect">правильно</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleCorrect" data-tip="Точный вариант от первой ноты до последней">i</span></span>
+          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleAccCheckbox"><span data-i18n="invStyleAcc">С бемолями\диезами</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
+          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleCorrectCheckbox"><span data-i18n="invStyleCorrect">Правильно</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleCorrect" data-tip="Точный вариант от первой ноты до последней">i</span></span>
           <!-- ВРЕМЕННО ОТКЛЮЧЕНО: галка "удобно" в "Аккорды/Лады" (раскомментировать, когда будет готово)
-          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleEasyCheckbox"><span data-i18n="invStyleEasy">удобно (beta)</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleEasy" data-tip="удобный вариант запоминания : мажор/минор всегда одинаковый для всех аккордов + добавочные ноты каждого аккорда (beta)">i</span></span>
+          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleEasyCheckbox"><span data-i18n="invStyleEasy">Удобно (beta)</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleEasy" data-tip="Удобный вариант запоминания : мажор/минор всегда одинаковый для всех аккордов + добавочные ноты каждого аккорда (beta)">i</span></span>
           -->
         </div>
         <div id="level3InversionBtns"></div>
@@ -2857,11 +2904,11 @@
           </select>
         </div>
         <div id="l3MidiInputSelectsContainer" class="midiInputSelectsContainer">
-          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="l3MidiInputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select></div>
+          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="l3MidiInputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select></div>
         </div>
         <div class="midiPanelRow">
           <label for="l3DawOutputSelect" data-i18n="midiOutputLabel">MIDI-выход</label>
-          <select id="l3DawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select>
+          <select id="l3DawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select>
         </div>
         <div id="l3MidiStatusLine" class="midiStatusLine"></div>
         <button type="button" class="noteBtn midiReconnectBtn" id="l3MidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI</button>
@@ -2874,6 +2921,12 @@
   <div id="trainingPanel" style="display:none">
       <div id="trainDisplayModeButtons" style="display:none">
        <div id="trainVariantChordBox" class="cofBox">
+        <!-- Язык интерфейса — самым первым пунктом, над "Выбором группы аккордов" -->
+        <div class="noteNamingSwitchRow" id="langSwitchRow">
+          <button type="button" class="noteNamingBtn" id="langRuBtn" data-lang="ru">Русский</button>
+          <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
+          <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
+        </div>
         <!-- "Выбор группы аккордов": подпись + (i) + 2 кнопки в одну строку.
              Бывший "Вариант 2" удалён — всегда показывается прежний
              "Вариант 1" (см. trainForceUIV1 в <script>). -->
@@ -3014,49 +3067,46 @@
         <div id="trainModeGroups" class="chordGridCard cols3 cofBox">
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-            <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа&#10;&#10;@@тон тон тон полутон тон тон полутон@@&#10;&#10;в полутонах : @@222 122 1@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа&#10;&#10;@@Тон тон тон полутон тон тон полутон@@&#10;&#10;В полутонах : @@222 122 1@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMajorBtn" data-mode="major" data-i18n="modeMajor">Мажор</button>
-            <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа&#10;&#10;@@тон тон полутон тон тон тон полутон@@&#10;&#10;в полутонах : @@221 222 1@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа&#10;&#10;@@Тон тон полутон тон тон тон полутон@@&#10;&#10;В полутонах : @@221 222 1@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-            <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа&#10;&#10;@@тон тон полутон тон тон полутон тон@@&#10;&#10;в полутонах : @@221 221 2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа&#10;&#10;@@Тон тон полутон тон тон полутон тон@@&#10;&#10;В полутонах : @@221 221 2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-            <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа&#10;&#10;@@тон полутон тон тон тон полутон тон@@&#10;&#10;в полутонах : @@212 221 2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа&#10;&#10;@@Тон полутон тон тон тон полутон тон@@&#10;&#10;В полутонах : @@212 221 2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor" data-i18n="modeMinor">Минор</button>
-            <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа&#10;&#10;@@тон полутон тон тон полутон тон тон@@&#10;&#10;в полутонах : @@212 212 2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа&#10;&#10;@@Тон полутон тон тон полутон тон тон@@&#10;&#10;В полутонах : @@212 212 2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-            <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа&#10;&#10;@@полутон тон тон тон полутон тон тон@@&#10;&#10;в полутонах : @@122 212 2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа&#10;&#10;@@Полутон тон тон тон полутон тон тон@@&#10;&#10;В полутонах : @@122 212 2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-            <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа&#10;&#10;@@полутон тон тон полутон тон тон тон@@&#10;&#10;в полутонах : @@122 122 2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа&#10;&#10;@@Полутон тон тон полутон тон тон тон@@&#10;&#10;В полутонах : @@122 122 2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
-            <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@тон полутон тон тон полутон полтора тона полутон@@&#10;&#10;в полутонах : @@212 213 1@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="Формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@Тон полутон тон тон полутон полтора тона полутон@@&#10;&#10;В полутонах : @@212 213 1@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
-            <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@тон полутон тон тон тон тон полутон@@&#10;&#10;в полутонах : @@212 222 1@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="Формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).&#10;&#10;@@Тон полутон тон тон тон тон полутон@@&#10;&#10;В полутонах : @@212 222 1@@">i</span>
           </div>
+          <label id="trainKeySigArcRow"><input type="checkbox" id="trainKeySigArcCheckbox"><span data-i18n="showKeySigArc">Показать стрелкой диезы\бемоли</span></label>
+          <label id="trainRealModeNotesRow"><input type="checkbox" id="trainRealModeNotesCheckbox"><span data-i18n="realModeNotes">Реальные ноты лада</span></label>
         </div>
       </div>
 
       <div id="trainExtraSettings" class="cofBox">
-        <div class="noteNamingSwitchRow" id="langSwitchRow">
-          <button type="button" class="noteNamingBtn" id="langRuBtn" data-lang="ru">Русский</button>
-          <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
-          <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
-        </div>
         <div class="themeSelectRow" id="themeSwitchRow">
           <span data-i18n="themeLabel">Тема оформления:</span>
           <select id="themeSelect" class="themeSelectEl">
@@ -3067,23 +3117,26 @@
             <option value="light" data-i18n="themeLight">Светлая</option>
           </select>
         </div>
+        <div class="themeSelectRow" id="trainNoteFontSizeRow">
+          <span data-i18n="noteFontSizeLabel">Размер шрифта:</span>
+          <input type="number" id="trainNoteFontSizeInput" class="fontSizeInput" min="5" max="40" step="1" value="14">
+        </div>
         <label><input type="checkbox" id="trainShowChordLettersCheckbox"><span data-i18n="showChordLetters">Показывать буквы аккорда под нотами</span></label>
         <label><input type="checkbox" id="trainShowChordLegendCheckbox"><span data-i18n="showChordDegrees">Показать ступени аккорда</span></label>
         <label><input type="checkbox" id="trainShowDegreesCheckbox"><span data-i18n="showKeyDegrees">Показывать ступени тональности</span></label>
         <label id="trainLockKeyRow" style="margin-left:24px;"><input type="checkbox" id="trainLockKeyCheckbox"><span data-i18n="lockKey">Привязать тональность</span></label>
         <label><input type="checkbox" id="trainShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
         <label id="trainCompactPianoRow" style="margin-left:24px;"><input type="checkbox" id="trainCompactPianoCheckbox"><span data-i18n="compactView">Компактный вид</span></label>
-        <!-- "Выбор обращения" — самостоятельный пункт (не подпункт
-             "Показывать клавиатуру"): кнопки обращений стоят на своём месте
-             под клавиатурой; без клавиатуры обращение видно только на круге.
-             Подпункты — схема круга: "с бемолями\диезами" (по умолчанию)
-             или "правильно", нажата всегда одна. Без "Выбора обращения" —
-             схема по умолчанию. -->
-        <div id="trainShowInversionsRow"><label><input type="checkbox" id="trainShowInversionsCheckbox"><span data-i18n="chooseInversion">Выбор обращения</span></label>
+        <!-- "Выбор обращения" — просто подзаголовок (без чекбокса): кнопки
+             обращений под клавиатурой показываются всегда (кроме "Компактного
+             вида"); без клавиатуры обращение видно только на круге.
+             Подпункты — схема круга: "С бемолями\диезами" (по умолчанию)
+             или "Правильно", нажата всегда одна. -->
+        <div id="trainShowInversionsRow"><span data-i18n="chooseInversion">Выбор обращения</span>
           <span class="infoIcon" data-i18n-tip="tipTrainInversions" data-tip="Обращения работают только для первого, второго и третьего обращений(если третье есть)">i</span></div>
         <div id="trainInvStyleRow" class="invStyleRow" style="margin-left:24px;">
-          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleAccCheckbox"><span data-i18n="invStyleAcc">с бемолями\диезами для больших аккордов</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
-          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleCorrectCheckbox"><span data-i18n="invStyleCorrect">правильно</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleCorrect" data-tip="Точный вариант от первой ноты до последней">i</span></span>
+          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleAccCheckbox"><span data-i18n="invStyleAcc">С бемолями\диезами</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
+          <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleCorrectCheckbox"><span data-i18n="invStyleCorrect">Правильно</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleCorrect" data-tip="Точный вариант от первой ноты до последней">i</span></span>
         </div>
       </div>
 
@@ -3107,7 +3160,7 @@
         <div class="trainAltNoteGroupTitle" data-i18n="noteNamingTitle">Название нот</div>
         <div class="noteNamingSwitchRow cofBox" id="noteNamingSwitchRow">
           <button type="button" class="noteNamingBtn active" id="noteNamingAbcBtn" data-system="abc">ABC</button>
-          <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege" data-i18n="noteNamingSolfege">до ре ми</button>
+          <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege" data-i18n="noteNamingSolfege">До ре ми</button>
         </div>
       </div>
 
@@ -3126,12 +3179,12 @@
           </select>
         </div>
         <div id="midiInputSelectsContainer" class="midiInputSelectsContainer">
-          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="midiInputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select></div>
+          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI-вход</span><select class="midiInputPortSelect" id="midiInputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select></div>
         </div>
         <div id="dawOutPanel">
           <div class="midiPanelRow">
             <label for="dawOutputSelect" data-i18n="midiOutputLabel">MIDI-выход</label>
-            <select id="dawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">нажмите «Подключить MIDI»</option></select>
+            <select id="dawOutputSelect" class="dawOutputSelect"><option value="" data-i18n="midiPressConnect">Нажмите «Подключить MIDI»</option></select>
           </div>
         </div>
         <div id="midiStatusLine" class="midiStatusLine"></div>
@@ -3154,8 +3207,8 @@
         </div>
         <div class="dawOutFormatBlock noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
           <div class="dawOutTitle" data-i18n="dawFormatTitle">Формат выхода:</div>
-          <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
-          <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
+          <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">MIDI 1 (1-127)</button>
+          <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">MIDI 2(1-65536)</button>
         </div>
 
         <label class="dawOutFieldRow dawSplitToggleRow" for="dawSplitChannelsCheckbox">
@@ -3368,6 +3421,7 @@ function refreshAllNoteNameDisplays(){
     }
   });
   if(typeof refreshTrainChordLetters === 'function') refreshTrainChordLetters();
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   if(typeof centerText !== 'undefined' && centerText){
     if(typeof practiceLevel !== 'undefined' && practiceLevel === 1 && typeof current !== 'undefined' && current){
       centerText.textContent = noteDisplay(current.name);
@@ -3444,9 +3498,9 @@ const I18N = {
   compactView:         { ru:'Компактный вид', en:'Compact view', zh:'紧凑视图' },
   showInversionArrows: { ru:'Показывать стрелками обращения', en:'Show inversions with arrows', zh:'用箭头显示转位' },
   addInversions:       { ru:'Добавить обращения', en:'Add inversions', zh:'加入转位' },
-  invStyleCorrect:     { ru:'правильно', en:'correct', zh:'正确' },
-  invStyleAcc:         { ru:'с бемолями\\диезами для больших аккордов', en:'with flats\\sharps for big chords', zh:'大和弦用降号\\升号' },
-  invStyleEasy:        { ru:'удобно (beta)', en:'convenient (beta)', zh:'方便 (beta)' },
+  invStyleCorrect:     { ru:'Правильно', en:'Correct', zh:'正确' },
+  invStyleAcc:         { ru:'С бемолями\\диезами', en:'With flats\\sharps', zh:'降号\\升号' },
+  invStyleEasy:        { ru:'Удобно (beta)', en:'Convenient (beta)', zh:'方便 (beta)' },
   nameChordMode:       { ru:'Назови аккорд/лад', en:'Name the chord/mode', zh:'说出和弦/调式' },
   tipNameMode: { ru:'Отображается аккорд или лад. Нужно выбрать из предложенных вариантов.', en:'A chord or mode is shown. Choose from the options offered.', zh:'显示一个和弦或调式。需要从给出的选项中选择。' },
   invRoot:             { ru:'Основное', en:'Root', zh:'原位' },
@@ -3459,7 +3513,7 @@ const I18N = {
   invLabel3:           { ru:'3е обращение', en:'3rd inversion', zh:'第三转位' },
   tipInvStyleCorrect: { ru:'Точный вариант от первой ноты до последней', en:'Exact version from the first note to the last', zh:'从第一个音到最后一个音的精确版本' },
   tipInvStyleAcc: { ru:'Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже', en:'Notes are placed close to each other to make them easier to remember; some notes are replaced by a step higher or lower', zh:'音符彼此靠近排列，便于记忆；部分音符被替换为高一级或低一级' },
-  tipInvStyleEasy: { ru:'удобный вариант запоминания : мажор/минор всегда одинаковый для всех аккордов + добавочные ноты каждого аккорда (beta)', en:'easy way to memorize: the major/minor triad is always the same for all chords + the added notes of each chord (beta)', zh:'便于记忆的版本：所有和弦的大/小三和弦始终相同 + 每个和弦的附加音 (beta)' },
+  tipInvStyleEasy: { ru:'Удобный вариант запоминания : мажор/минор всегда одинаковый для всех аккордов + добавочные ноты каждого аккорда (beta)', en:'Easy way to memorize: the major/minor triad is always the same for all chords + the added notes of each chord (beta)', zh:'便于记忆的版本：所有和弦的大/小三和弦始终相同 + 每个和弦的附加音 (beta)' },
   tipTrainInversions: { ru:'Обращения работают только для первого, второго и третьего обращений(если третье есть)', en:'Inversions work only for the first, second and third inversions (if there is a third)', zh:'转位仅适用于第一、第二和第三转位（如果有第三转位）' },
   tipInversions: {
     ru:'Обращения работают только для первого, второго и третьего обращений(если третье есть). Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@',
@@ -3477,6 +3531,7 @@ const I18N = {
   showChordDegrees:    { ru:'Показать ступени аккорда', en:'Show chord degrees', zh:'显示和弦音级' },
   lockKey:             { ru:'Привязать тональность', en:'Lock key', zh:'锁定调性' },
   themeLabel:          { ru:'Тема оформления:', en:'Theme:', zh:'主题：' },
+  noteFontSizeLabel:   { ru:'Размер шрифта:', en:'Font size:', zh:'字体大小：' },
   themeDark:           { ru:'Тёмная', en:'Dark', zh:'深色' },
   themeGrayYellow:     { ru:'Серо-жёлтая', en:'Gray-yellow', zh:'灰黄色' },
   themeBlackOrange:    { ru:'Чёрно-оранжевая', en:'Black-orange', zh:'黑橙色' },
@@ -3487,11 +3542,11 @@ const I18N = {
   noteNamingTitle:     { ru:'Название нот', en:'Note naming', zh:'音符命名' },
   midiInputLabel:      { ru:'Количество MIDI входов', en:'Number of MIDI inputs', zh:'MIDI 输入数量' },
   midiInputPortLabel:  { ru:'MIDI-вход', en:'MIDI input', zh:'MIDI 输入' },
-  midiPressConnect:    { ru:'нажмите «Подключить MIDI»', en:'press "Connect MIDI"', zh:'请点击"连接 MIDI"' },
+  midiPressConnect:    { ru:'Нажмите «Подключить MIDI»', en:'Press "Connect MIDI"', zh:'请点击"连接 MIDI"' },
   midiOutputLabel:     { ru:'MIDI-выход', en:'MIDI output', zh:'MIDI 输出' },
   midiNoInputsFound:   { ru:'MIDI входы не найдены', en:'No MIDI inputs found', zh:'未找到MIDI输入设备' },
   midiInputsPrefix:    { ru:'Входы:', en:'Inputs:', zh:'输入设备：' },
-  midiPortNotConnected:{ ru:'(не подключено)', en:'(not connected)', zh:'（未连接）' },
+  midiPortNotConnected:{ ru:'(Не подключено)', en:'(Not connected)', zh:'（未连接）' },
   webMidiUnsupported:  { ru:'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)', en:'Browser does not support Web MIDI (Chrome/Edge required)', zh:'浏览器不支持 Web MIDI（需要 Chrome/Edge）' },
   midiStatusDefault:   { ru:'MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.', en:'MIDI keyboard not connected. Press the button below to connect.', zh:'MIDI键盘未连接。请点击下方按钮进行连接。' },
   midiReconnectBtn:    { ru:'Подключить MIDI', en:'Connect MIDI', zh:'连接 MIDI' },
@@ -3501,8 +3556,10 @@ const I18N = {
   dawIntervalLabel:    { ru:'Интервал между нотами (сек):', en:'Interval between notes (sec):', zh:'音符间隔（秒）：' },
   dawFormatTitle:      { ru:'Формат выхода:', en:'Output format:', zh:'输出格式：' },
   splitChannels:       { ru:'Разделить сигнал на каналы', en:'Split signal into channels', zh:'将信号分配到不同通道' },
-  noteNamingSolfege:   { ru:'до ре ми', en:'do re mi', zh:'do re mi' },
+  noteNamingSolfege:   { ru:'До ре ми', en:'Do re mi', zh:'do re mi' },
   modeLydian:          { ru:'Лидийский', en:'Lydian', zh:'利底亚调式' },
+  showKeySigArc:       { ru:'Показать стрелкой диезы\\бемоли', en:'Show sharps\\flats with a line', zh:'用线显示升号\\降号' },
+  realModeNotes:       { ru:'Реальные ноты лада', en:'Real notes of the mode', zh:'调式实际音名' },
   modeMajor:           { ru:'Мажор', en:'Major', zh:'大调' },
   modeMixolydian:      { ru:'Миксолидийский', en:'Mixolydian', zh:'混合利底亚调式' },
   modeDorian:          { ru:'Дорийский', en:'Dorian', zh:'多利亚调式' },
@@ -3512,58 +3569,58 @@ const I18N = {
   modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
   modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
   tipMode0_6: {
-    ru:'@@0-6@@. 0 нот слева от выбранной ноты, 6 справа\n\n@@тон тон тон полутон тон тон полутон@@\n\nв полутонах : @@222 122 1@@',
-    en:'@@0-6@@. 0 notes to the left of the selected note, 6 to the right\n\n@@tone tone tone semitone tone tone semitone@@\n\nin semitones : @@222 122 1@@',
+    ru:'@@0-6@@. 0 нот слева от выбранной ноты, 6 справа\n\n@@Тон тон тон полутон тон тон полутон@@\n\nВ полутонах : @@222 122 1@@',
+    en:'@@0-6@@. 0 notes to the left of the selected note, 6 to the right\n\n@@Tone tone tone semitone tone tone semitone@@\n\nIn semitones : @@222 122 1@@',
     zh:'@@0-6@@。所选音符左边 0 个音，右边 6 个\n\n@@全音 全音 全音 半音 全音 全音 半音@@\n\n半音数 : @@222 122 1@@'
   },
   tipMode1_5: {
-    ru:'@@1-5@@. 1 нота слева от выбранной ноты, 5 справа\n\n@@тон тон полутон тон тон тон полутон@@\n\nв полутонах : @@221 222 1@@',
-    en:'@@1-5@@. 1 note to the left of the selected note, 5 to the right\n\n@@tone tone semitone tone tone tone semitone@@\n\nin semitones : @@221 222 1@@',
+    ru:'@@1-5@@. 1 нота слева от выбранной ноты, 5 справа\n\n@@Тон тон полутон тон тон тон полутон@@\n\nВ полутонах : @@221 222 1@@',
+    en:'@@1-5@@. 1 note to the left of the selected note, 5 to the right\n\n@@Tone tone semitone tone tone tone semitone@@\n\nIn semitones : @@221 222 1@@',
     zh:'@@1-5@@。所选音符左边 1 个音，右边 5 个\n\n@@全音 全音 半音 全音 全音 全音 半音@@\n\n半音数 : @@221 222 1@@'
   },
   tipMode2_4: {
-    ru:'@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа\n\n@@тон тон полутон тон тон полутон тон@@\n\nв полутонах : @@221 221 2@@',
-    en:'@@2-4@@. 2 notes to the left of the selected note, 4 to the right\n\n@@tone tone semitone tone tone semitone tone@@\n\nin semitones : @@221 221 2@@',
+    ru:'@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа\n\n@@Тон тон полутон тон тон полутон тон@@\n\nВ полутонах : @@221 221 2@@',
+    en:'@@2-4@@. 2 notes to the left of the selected note, 4 to the right\n\n@@Tone tone semitone tone tone semitone tone@@\n\nIn semitones : @@221 221 2@@',
     zh:'@@2-4@@。所选音符左边 2 个音，右边 4 个\n\n@@全音 全音 半音 全音 全音 半音 全音@@\n\n半音数 : @@221 221 2@@'
   },
   tipMode3_3: {
-    ru:'@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа\n\n@@тон полутон тон тон тон полутон тон@@\n\nв полутонах : @@212 221 2@@',
-    en:'@@3-3@@. 3 notes to the left of the selected note, 3 to the right\n\n@@tone semitone tone tone tone semitone tone@@\n\nin semitones : @@212 221 2@@',
+    ru:'@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа\n\n@@Тон полутон тон тон тон полутон тон@@\n\nВ полутонах : @@212 221 2@@',
+    en:'@@3-3@@. 3 notes to the left of the selected note, 3 to the right\n\n@@Tone semitone tone tone tone semitone tone@@\n\nIn semitones : @@212 221 2@@',
     zh:'@@3-3@@。所选音符左边 3 个音，右边 3 个\n\n@@全音 半音 全音 全音 全音 半音 全音@@\n\n半音数 : @@212 221 2@@'
   },
   tipMode4_2: {
-    ru:'@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа\n\n@@тон полутон тон тон полутон тон тон@@\n\nв полутонах : @@212 212 2@@',
-    en:'@@4-2@@. 4 notes to the left of the selected note, 2 to the right\n\n@@tone semitone tone tone semitone tone tone@@\n\nin semitones : @@212 212 2@@',
+    ru:'@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа\n\n@@Тон полутон тон тон полутон тон тон@@\n\nВ полутонах : @@212 212 2@@',
+    en:'@@4-2@@. 4 notes to the left of the selected note, 2 to the right\n\n@@Tone semitone tone tone semitone tone tone@@\n\nIn semitones : @@212 212 2@@',
     zh:'@@4-2@@。所选音符左边 4 个音，右边 2 个\n\n@@全音 半音 全音 全音 半音 全音 全音@@\n\n半音数 : @@212 212 2@@'
   },
   tipMode5_1: {
-    ru:'@@5-1@@. 5 нот слева от выбранной ноты, 1 справа\n\n@@полутон тон тон тон полутон тон тон@@\n\nв полутонах : @@122 212 2@@',
-    en:'@@5-1@@. 5 notes to the left of the selected note, 1 to the right\n\n@@semitone tone tone tone semitone tone tone@@\n\nin semitones : @@122 212 2@@',
+    ru:'@@5-1@@. 5 нот слева от выбранной ноты, 1 справа\n\n@@Полутон тон тон тон полутон тон тон@@\n\nВ полутонах : @@122 212 2@@',
+    en:'@@5-1@@. 5 notes to the left of the selected note, 1 to the right\n\n@@Semitone tone tone tone semitone tone tone@@\n\nIn semitones : @@122 212 2@@',
     zh:'@@5-1@@。所选音符左边 5 个音，右边 1 个\n\n@@半音 全音 全音 全音 半音 全音 全音@@\n\n半音数 : @@122 212 2@@'
   },
   tipMode6_0: {
-    ru:'@@6-0@@. 6 нот слева от выбранной ноты, 0 справа\n\n@@полутон тон тон полутон тон тон тон@@\n\nв полутонах : @@122 122 2@@',
-    en:'@@6-0@@. 6 notes to the left of the selected note, 0 to the right\n\n@@semitone tone tone semitone tone tone tone@@\n\nin semitones : @@122 122 2@@',
+    ru:'@@6-0@@. 6 нот слева от выбранной ноты, 0 справа\n\n@@Полутон тон тон полутон тон тон тон@@\n\nВ полутонах : @@122 122 2@@',
+    en:'@@6-0@@. 6 notes to the left of the selected note, 0 to the right\n\n@@Semitone tone tone semitone tone tone tone@@\n\nIn semitones : @@122 122 2@@',
     zh:'@@6-0@@。所选音符左边 6 个音，右边 0 个\n\n@@半音 全音 全音 半音 全音 全音 全音@@\n\n半音数 : @@122 122 2@@'
   },
   tipModeHarmMinorL3: {
-    ru:'формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@тон полутон тон тон полутон полтора тона полутон@@\n\nв полутонах : @@212 213 1@@',
-    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@tone semitone tone tone semitone tone and a half semitone@@\n\nin semitones : @@212 213 1@@',
+    ru:'Формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@Тон полутон тон тон полутон полтора тона полутон@@\n\nВ полутонах : @@212 213 1@@',
+    en:'Formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@Tone semitone tone tone semitone tone and a half semitone@@\n\nIn semitones : @@212 213 1@@',
     zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G Ab B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。\n\n@@全音 半音 全音 全音 半音 增二度 半音@@\n\n半音数 : @@212 213 1@@'
   },
   tipModeMelMinorL3: {
-    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@тон полутон тон тон тон тон полутон@@\n\nв полутонах : @@212 222 1@@',
-    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@tone semitone tone tone tone tone semitone@@\n\nin semitones : @@212 222 1@@',
+    ru:'Формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@Тон полутон тон тон тон тон полутон@@\n\nВ полутонах : @@212 222 1@@',
+    en:'Formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@Tone semitone tone tone tone tone semitone@@\n\nIn semitones : @@212 222 1@@',
     zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个和第四个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G A B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。\n\n@@全音 半音 全音 全音 全音 全音 半音@@\n\n半音数 : @@212 222 1@@'
   },
   tipModeHarmMinorTrain: {
-    ru:'формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@тон полутон тон тон полутон полтора тона полутон@@\n\nв полутонах : @@212 213 1@@',
-    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@tone semitone tone tone semitone tone and a half semitone@@\n\nin semitones : @@212 213 1@@',
+    ru:'Формула @@4-2@@ (4 слева от тоники-2 справа), но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@Тон полутон тон тон полутон полтора тона полутон@@\n\nВ полутонах : @@212 213 1@@',
+    en:'Formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@Tone semitone tone tone semitone tone and a half semitone@@\n\nIn semitones : @@212 213 1@@',
     zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G Ab B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。\n\n@@全音 半音 全音 全音 半音 增二度 半音@@\n\n半音数 : @@212 213 1@@'
   },
   tipModeMelMinorTrain: {
-    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@тон полутон тон тон тон тон полутон@@\n\nв полутонах : @@212 222 1@@',
-    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@tone semitone tone tone tone tone semitone@@\n\nin semitones : @@212 222 1@@',
+    ru:'Формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).\n\n@@Тон полутон тон тон тон тон полутон@@\n\nВ полутонах : @@212 222 1@@',
+    en:'Formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).\n\n@@Tone semitone tone tone tone tone semitone@@\n\nIn semitones : @@212 222 1@@',
     zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个和第四个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G A B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。\n\n@@全音 半音 全音 全音 全音 全音 半音@@\n\n半音数 : @@212 222 1@@'
   },
   noInputsOption:      { ru:'Нет входов', en:'No inputs', zh:'无输入设备' },
@@ -3743,6 +3800,54 @@ function applyTheme(theme){
     sel.addEventListener('change', ()=>applyTheme(sel.value));
   });
   applyTheme(appTheme);
+})();
+
+/* ===== Размер шрифта нот на круге "Обучения" =====
+   Основной размер (5..40) вводится в настройках под "Темой оформления"
+   и запоминается. Красный знак ♯/♭/♮ в режиме "с бемолями\диезами для
+   больших аккордов" = основной размер + TRAIN_ACC_SIGN_FONT_SIZE_ADD.
+   Пример: основной 15, прибавка 2 -> знак 17. Меняйте число ниже. */
+const TRAIN_ACC_SIGN_FONT_SIZE_ADD = 5;
+const TRAIN_NOTE_FONT_SIZE_KEY = 'circleTrainNoteFontSize';
+const TRAIN_NOTE_FONT_SIZE_MIN = 5;
+const TRAIN_NOTE_FONT_SIZE_MAX = 40;
+const TRAIN_NOTE_FONT_SIZE_DEFAULT = 14;
+let trainNoteFontSize = parseInt(localStorage.getItem(TRAIN_NOTE_FONT_SIZE_KEY), 10);
+if(!(trainNoteFontSize >= TRAIN_NOTE_FONT_SIZE_MIN && trainNoteFontSize <= TRAIN_NOTE_FONT_SIZE_MAX)){
+  trainNoteFontSize = TRAIN_NOTE_FONT_SIZE_DEFAULT;
+}
+function applyTrainNoteFontSize(size){
+  trainNoteFontSize = size;
+  localStorage.setItem(TRAIN_NOTE_FONT_SIZE_KEY, String(size));
+  const root = document.documentElement.style;
+  root.setProperty('--train-note-font-size', size + 'px');
+  root.setProperty('--train-acc-sign-font-size', (size + TRAIN_ACC_SIGN_FONT_SIZE_ADD) + 'px');
+  const inp = document.getElementById('trainNoteFontSizeInput');
+  if(inp && inp.value !== String(size)) inp.value = String(size);
+}
+(function initTrainNoteFontSize(){
+  const inp = document.getElementById('trainNoteFontSizeInput');
+  if(inp){
+    // применяем сразу при вводе, если число уже в пределах 5..40
+    inp.addEventListener('input', ()=>{
+      const v = parseInt(inp.value, 10);
+      if(v >= TRAIN_NOTE_FONT_SIZE_MIN && v <= TRAIN_NOTE_FONT_SIZE_MAX) applyTrainNoteFontSize(v);
+    });
+    // при уходе из поля: пустое/лишнее -> возвращаем к допустимому
+    inp.addEventListener('change', ()=>{
+      let v = parseInt(inp.value, 10);
+      if(isNaN(v)) v = trainNoteFontSize;
+      v = Math.min(TRAIN_NOTE_FONT_SIZE_MAX, Math.max(TRAIN_NOTE_FONT_SIZE_MIN, v));
+      inp.value = String(v);
+      applyTrainNoteFontSize(v);
+    });
+    // цифры/пробел в поле не должны срабатывать как горячие клавиши
+    inp.addEventListener('keydown', (e)=>{
+      e.stopPropagation();
+      if(e.key === 'Enter') inp.blur();
+    });
+  }
+  applyTrainNoteFontSize(trainNoteFontSize);
 })();
 
 const FLAT_TO_SHARP = { 'D♭':'C♯', 'A♭':'G♯', 'E♭':'D♯', 'B♭':'A♯', 'G♭':'F♯' };
@@ -4754,6 +4859,7 @@ function applyTrainRotationOffset(offset){
   if(typeof refreshTrainChordLetters === 'function'){
     refreshTrainChordLetters();
   }
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   if(pressedTrainTonicRing !== null && pressedTrainTonicIndex !== null){
     clearTrainArrows();
     // Если выбран лад (а не аккорд), стрелки строить нельзя — иначе после
@@ -5554,7 +5660,10 @@ function loadInversionSet(key){
   return out.length ? out : null;
 }
 
-let trainShowInversions = localStorage.getItem(TRAIN_SHOW_INVERSIONS_KEY) === '1';
+// Выбор обращения включён всегда (чекбокса больше нет); кнопки обращений
+// скрыты только при "Компактном виде"
+const trainShowInversions = true;
+try{ localStorage.removeItem(TRAIN_SHOW_INVERSIONS_KEY); }catch(e){}
 /* "Компактный вид" (подпункт "Показывать клавиатуру"): все ноты аккорда
    или лада рисуются в одной октаве клавиатуры (C–B) — напр. у G7 ноты
    D F G B, у C9 D сразу после C. Меняется только картинка на клавиатуре
@@ -5562,10 +5671,6 @@ let trainShowInversions = localStorage.getItem(TRAIN_SHOW_INVERSIONS_KEY) === '1
    обращения": включена может быть только одна из двух галок. */
 const TRAIN_COMPACT_PIANO_KEY = 'circleTrainCompactPiano';
 let trainCompactPiano = localStorage.getItem(TRAIN_COMPACT_PIANO_KEY) === '1';
-if(trainCompactPiano && trainShowInversions){
-  trainCompactPiano = false;
-  try{ localStorage.setItem(TRAIN_COMPACT_PIANO_KEY, '0'); }catch(e){}
-}
 /* Схема круга для аккордов (подпункты "Выбор обращения"):
    'acc'     — "с бемолями\диезами для больших аккордов" (по умолчанию);
    'correct' — "правильно".
@@ -5591,8 +5696,8 @@ function trainInvSchemeOn(){
 // нужны ли сейчас кнопки обращений (от клавиатуры не зависят)
 function trainInvButtonsWanted(){
   try{
-    return appMode === 'training' && trainShowInversions && !trainModeType
-      && !!pressedTrainTonicName && trainInversionBtnCount() > 0;
+    return appMode === 'training' && trainShowInversions && !trainCompactPiano
+      && !trainModeType && !!pressedTrainTonicName && trainInversionBtnCount() > 0;
   }catch(e){ return false; }
 }
 
@@ -5677,8 +5782,8 @@ const trainInversionBtnsEl = document.getElementById('trainInversionBtns');
 function updateTrainInversionButtons(){
   if(!trainInversionBtnsEl) return;
   const count = trainInversionBtnCount();
-  const visible = trainShowInversions && appMode === 'training'
-    && !!pressedTrainTonicName && count > 0;
+  const visible = trainShowInversions && !trainCompactPiano
+    && appMode === 'training' && !!pressedTrainTonicName && count > 0;
   if(!visible){
     trainInversionBtnsEl.style.display = 'none';
     while(trainInversionBtnsEl.firstChild) trainInversionBtnsEl.removeChild(trainInversionBtnsEl.firstChild);
@@ -5854,7 +5959,12 @@ function updateTrainPiano(){
 function updateTrainPianoOffset(){
   const zoom = (typeof zoomTraining === 'number' && !isNaN(zoomTraining)) ? zoomTraining : 100;
   const extra = 480 * (zoom/100 - 1) / 2; // прирост радиуса круга за счёт масштаба
-  const val = (32 + Math.max(0, extra)) + 'px';
+  // с включённой галкой "Показать стрелкой диезы\бемоли" клавиатура
+  // стоит дальше от круга (TRAIN_PIANO_GAP_WITH_KEYSIG), чтобы не
+  // закрывать ноты на линии знаков
+  const keySigGap = (typeof trainKeySigArcOn !== 'undefined' && trainKeySigArcOn
+                     && typeof TRAIN_PIANO_GAP_WITH_KEYSIG === 'number') ? TRAIN_PIANO_GAP_WITH_KEYSIG : 32;
+  const val = (keySigGap + Math.max(0, extra)) + 'px';
   const left = document.body.classList.contains('piano-left');
   // настройки справа — клавиатура слева от круга (см. body.piano-left)
   if(trainPianoWrapEl){
@@ -5892,7 +6002,6 @@ function updateTrainPianoOffset(){
 }
 
 const trainShowPianoCheckbox = document.getElementById('trainShowPianoCheckbox');
-const trainShowInversionsCheckbox = document.getElementById('trainShowInversionsCheckbox');
 const trainShowInversionsRow = document.getElementById('trainShowInversionsRow');
 const trainInvStyleRow = document.getElementById('trainInvStyleRow');
 const trainInvStyleCorrectCheckbox = document.getElementById('trainInvStyleCorrectCheckbox');
@@ -5906,10 +6015,9 @@ const trainCompactPianoRow = document.getElementById('trainCompactPianoRow');
 function setTrainInversionsAvailability(pianoEnabled){
   if(trainCompactPianoCheckbox) trainCompactPianoCheckbox.disabled = !pianoEnabled;
   if(trainCompactPianoRow) trainCompactPianoRow.classList.toggle('disabled', !pianoEnabled);
-  const styleEnabled = !!trainShowInversions;
-  if(trainInvStyleCorrectCheckbox) trainInvStyleCorrectCheckbox.disabled = !styleEnabled;
-  if(trainInvStyleAccCheckbox) trainInvStyleAccCheckbox.disabled = !styleEnabled;
-  if(trainInvStyleRow) trainInvStyleRow.classList.toggle('disabled', !styleEnabled);
+  if(trainInvStyleCorrectCheckbox) trainInvStyleCorrectCheckbox.disabled = false;
+  if(trainInvStyleAccCheckbox) trainInvStyleAccCheckbox.disabled = false;
+  if(trainInvStyleRow) trainInvStyleRow.classList.remove('disabled');
 }
 
 trainShowPianoCheckbox.checked = trainShowPiano;
@@ -5926,23 +6034,6 @@ trainShowPianoCheckbox.addEventListener('change', ()=>{
   refreshTrainCircleArrows();
 });
 
-if(trainShowInversionsCheckbox){
-  trainShowInversionsCheckbox.checked = trainShowInversions;
-  trainShowInversionsCheckbox.addEventListener('change', ()=>{
-    trainShowInversions = trainShowInversionsCheckbox.checked;
-    localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, trainShowInversions ? '1' : '0');
-    // "Компактный вид" и "Выбор обращения" — одновременно нельзя
-    if(trainShowInversions && trainCompactPiano){
-      trainCompactPiano = false;
-      localStorage.setItem(TRAIN_COMPACT_PIANO_KEY, '0');
-      if(trainCompactPianoCheckbox) trainCompactPianoCheckbox.checked = false;
-    }
-    setTrainInversionsAvailability(trainShowPiano);
-    updateTrainPiano();
-    refreshTrainCircleArrows();
-  });
-}
-
 if(trainCompactPianoCheckbox){
   trainCompactPianoCheckbox.checked = trainCompactPiano;
   trainCompactPianoCheckbox.addEventListener('change', ()=>{
@@ -5952,12 +6043,8 @@ if(trainCompactPianoCheckbox){
     }
     trainCompactPiano = trainCompactPianoCheckbox.checked;
     localStorage.setItem(TRAIN_COMPACT_PIANO_KEY, trainCompactPiano ? '1' : '0');
-    // включили компактный вид — снимаем "Выбор обращения"
-    if(trainCompactPiano && trainShowInversions){
-      trainShowInversions = false;
-      localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, '0');
-      if(trainShowInversionsCheckbox) trainShowInversionsCheckbox.checked = false;
-    }
+    // компактный вид: кнопки обращений скрыты — показываем основной вид
+    if(trainCompactPiano) trainInversion = 0;
     setTrainInversionsAvailability(trainShowPiano);
     updateTrainPiano();
     refreshTrainCircleArrows();
@@ -9118,16 +9205,6 @@ function buildTriadArrowsForTonicRaw(ring, tonicIndex){
      && buildTriadInversionArrows(trainChordType, ring, tonicIndex)){
     return;
   }
-  // Только "Показывать обращения" (без "стрелками"): аккорды из 4 нот и
-  // больше рисуются схемой "с бемолями\диезами" в её старом виде — без
-  // ручных правок ACC_FORCED_CELLS (напр. C13: C-Em-G-B♭(Bm)-D-F♮(F♯m)-A).
-  // Аккорды из 3 нот — как раньше.
-  // Схема по умолчанию (без галок): аккорды из 4+ нот —
-  if(!trainModeType && uiVariant1 && !trainInvSchemeOn()
-     && trainChordFormula(trainChordType, ring).length >= 4
-     && buildTriadInversionArrows(trainChordType, ring, tonicIndex, 'accOld')){
-    return;
-  }
   if(SUS_CONFIGS[trainChordType]){
     // dom7 на мажорном кольце (напр. C7): по просьбе пользователя буквенная
     // и числовая схемы стрелок поменяны местами — буквенная (C -> G -> Em
@@ -11158,6 +11235,53 @@ function highlightModeForTonic(ring, tonicIndex){
       highlightedTrainWedges.push(item);
     }
   }
+  applyTrainRealModeNotes(ring, tonicIndex, cfg);
+}
+
+/* =========================================================
+   Галка "Реальные ноты лада" (под кнопками ладов в "Обучении").
+   Выключена — на круге остаются привычные названия ячеек (напр. у F♯
+   мажора слева D♭, A♭, E♭, B♭, F). Включена — ячейки цепочки лада,
+   чьё название не совпадает с нотой лада по нотам, подписываются
+   настоящей нотой лада (C♯, G♯, D♯, A♯, E♯) красным текстом. Цвет самих
+   ячеек не меняется. Ноты лада — те же, что на клавиатуре-подсказке
+   (trainModeLettersFor). Если лад без дубль-знаков записывается только
+   от энгармонического двойника тоники (напр. D♭ минор -> C♯ минор),
+   подписывается и тоника.
+   ========================================================= */
+// Цвет текста заменённых подписей — меняйте здесь (var(--red) в тёмной
+// теме слишком бледный, почти белый, поэтому отдельный красный).
+var TRAIN_REAL_MODE_NOTE_COLOR = '#C85A5A';
+var TRAIN_REAL_MODE_NOTES_KEY = 'circleTrainRealModeNotes';
+var trainRealModeNotesOn = localStorage.getItem(TRAIN_REAL_MODE_NOTES_KEY) === '1';
+
+function asciiAccidentals(str){
+  return String(str).replace(/♯/g, '#').replace(/♭/g, 'b');
+}
+
+function applyTrainRealModeNotes(ring, tonicIndex, cfg){
+  if(!trainRealModeNotesOn || !cfg) return;
+  const tonicItem = trainWedgeMap[ring + '-' + tonicIndex];
+  if(!tonicItem) return;
+  const letters = trainModeLettersFor(tonicItem.name, cfg.id);
+  if(!letters) return;
+  const semis = ring === 'minor' ? minorsSemitone : majorsSemitone;
+  const raiseList = cfg.raise || [];
+  for(let k = -cfg.L; k <= cfg.R; k++){
+    const idx = ((tonicIndex + k) % 12 + 12) % 12;
+    const item = trainWedgeMap[ring + '-' + idx];
+    if(!item) continue;
+    const raised = raiseList.some(r => r.cellOffset === k);
+    const pc = ((semis[idx] + (raised ? 1 : 0)) % 12 + 12) % 12;
+    const real = letters.find(s => parseTrainNoteName(s).pc === pc);
+    if(!real) continue;
+    const shown = item.raisedLabelRaw || item.name.replace(/m$/, '');
+    if(asciiAccidentals(shown) === asciiAccidentals(real)) continue;
+    item.raisedLabelRaw = real;
+    item.label.textContent = noteDisplay(real);
+    item.label.style.fill = TRAIN_REAL_MODE_NOTE_COLOR;
+    if(!raisedTrainWedges.includes(item)) raisedTrainWedges.push(item);
+  }
 }
 
 // Красит одну ячейку цепочки лада в красный (--red-flash, уже с 50%
@@ -11189,6 +11313,7 @@ function unraiseTrainWedges(){
   raisedTrainWedges.forEach(item => {
     item.raisedLabelRaw = null;
     item.label.textContent = noteDisplay(item.name);
+    item.label.style.fill = '';
   });
   raisedTrainWedges.length = 0;
 }
@@ -11528,6 +11653,7 @@ function clearTrainTonicPress(){
   clearTrainArrows();
   updateTrainDegreeLabels(null, null);
   if(typeof updateTrainPiano === 'function') updateTrainPiano();
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
 }
 
 // ring: 'major' | 'minor', tonicIndex: 0..11
@@ -11589,6 +11715,7 @@ function selectTrainTonic(ring, tonicIndex){
       highlightTriadForTonic(ring, tonicIndex);
     }
   }
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   if(typeof updateTrainPiano === 'function') updateTrainPiano();
   if(typeof playCurrentTrainChordToDaw === 'function') playCurrentTrainChordToDaw();
 }
@@ -11873,6 +12000,7 @@ function clearTrainModeTypeForChordPick(){
   saveTrainModeType();
   if(typeof applyTrainModeButtonsUI === 'function') applyTrainModeButtonsUI();
   if(typeof applyTrainVariantLockForMode === 'function') applyTrainVariantLockForMode();
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   return true;
 }
 
@@ -11970,6 +12098,7 @@ function setTrainModeType(modeId){
   applyTrainChordType(); // снимает active с кнопок аккордов, если лад теперь выбран
   applyTrainVariantLockForMode();
   clearTrainArrows();
+  if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   if(pressedTrainTonicRing !== null){
     clearTriadHighlights();
     if(trainModeType){
@@ -11991,6 +12120,219 @@ Object.keys(trainModeBtnEls).forEach(modeId=>{
 
 applyTrainModeButtonsUI();
 applyTrainVariantLockForMode();
+
+/* =========================================================
+   Ключевые знаки лада ("Обучение").
+   Когда выбран лад и нажата тоника, рядом с тоникой (снаружи круга)
+   показывается количество знаков тональности: "3♯", "5♭", у F♯/G♭ —
+   "6♯ / 6♭", без знаков — "0". Считается по родительскому мажору лада
+   (D дорийский -> C мажор -> 0; гармон./мелод. минор — как натуральный
+   минор).
+   Правая половина круга (G..B) — диезы, левая (F..D♭) — бемоли,
+   F♯/G♭ — оба варианта.
+   Галка "Показать стрелкой диезы\бемоли" (под кнопками ладов)
+   дополнительно рисует снаружи круга линию по нотам со знаками:
+   диезы от F по часовой (F♯ C♯ G♯ ...), бемоли от B♭ против часовой
+   (B♭ E♭ A♭ ...), на каждой ноте — кружок с номером знака по порядку.
+   Ячейки круга при этом не перекрашиваются.
+   ========================================================= */
+
+// ===== НАСТРОЙКИ ЦИФРЫ КОЛИЧЕСТВА ЗНАКОВ (правьте здесь) =====
+// Расстояние от центра круга до ближнего к кругу края цифры (px).
+// Внешний край круга — 235 (R3). Больше — дальше от круга.
+var TRAIN_KEYSIG_COUNT_RADIUS = 245;
+// Размер шрифта цифры (px).
+var TRAIN_KEYSIG_COUNT_FONT_SIZE = 16;
+// Шрифт цифры ('var(--font)' — как у нот на круге, либо любое имя
+// шрифта, напр. "Arial, sans-serif").
+var TRAIN_KEYSIG_COUNT_FONT_FAMILY = 'var(--font)';
+// Цвет цифры (сейчас — зелёный, как у тоники).
+var TRAIN_KEYSIG_COUNT_COLOR = 'var(--green)';
+// Для тоники на МИНОРНОМ кольце цифра стоит внутри круга: расстояние от
+// центра круга до дальнего от центра края цифры (px). Внутренний край
+// минорного кольца — 95 (R1). Меньше — ближе к центру.
+var TRAIN_KEYSIG_COUNT_RADIUS_MINOR = 88;
+
+// ===== НАСТРОЙКИ ЛИНИИ ЗНАКОВ =====
+// Линия всегда идёт дальше цифры: её радиус = расстояние до цифры
+// (TRAIN_KEYSIG_COUNT_RADIUS) + этот отступ (px). Если цифра широкая и
+// всё равно достаёт до линии — линия сама отодвигается ещё дальше.
+// Цвет — --keysig-line в начале файла.
+var TRAIN_KEYSIG_ARC_OFFSET = 36;
+// Отступ клавиатуры-подсказки от круга (px), когда галка линии включена
+// (без галки — прежние 32px), чтобы клавиатура не закрывала ноты линии.
+var TRAIN_PIANO_GAP_WITH_KEYSIG = 95;
+var TRAIN_KEYSIG_ARC_WIDTH = 3;          // толщина линии
+var TRAIN_KEYSIG_BADGE_RADIUS = 8;       // радиус кружка с номером
+var TRAIN_KEYSIG_BADGE_FONT_SIZE = 11;   // шрифт номера в кружке
+var TRAIN_KEYSIG_NOTE_GAP = 12;          // зазор от линии до названия ноты
+var TRAIN_KEYSIG_NOTE_FONT_SIZE = 15;    // шрифт названия ноты
+
+var TRAIN_KEYSIG_ARC_KEY = 'circleTrainKeySigArc';
+var trainKeySigArcOn = localStorage.getItem(TRAIN_KEYSIG_ARC_KEY) === '1';
+var trainKeySigLayer = null;
+
+// ячейки мажорного кольца, где стоят ноты со знаками, по порядку знаков
+var KEYSIG_SHARP_POS = [11, 0, 1, 2, 3, 4, 5];   // F C G D A E B
+var KEYSIG_FLAT_POS  = [10, 9, 8, 7, 6, 5, 4];   // B♭ E♭ A♭ D♭ G♭ C♭ F♭
+var KEYSIG_SHARP_NAMES = ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'];
+var KEYSIG_FLAT_NAMES  = ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'];
+
+// Родительский мажор лада — индекс ячейки мажорного кольца (0 = C).
+// Буква тоники на круге: мажорное кольцо — сам индекс, минорное —
+// +3 (Am стоит под C, а буква A на мажорном кольце — индекс 3).
+// Цепочка лада занимает L ячеек слева от тоники, у мажора L = 1,
+// поэтому родительский мажор = буква тоники - L + 1.
+function trainKeySigParentIndex(ring, tonicIndex, cfg){
+  const letterIdx = ring === 'minor' ? tonicIndex + 3 : tonicIndex;
+  return ((letterIdx - cfg.L + 1) % 12 + 12) % 12;
+}
+
+// { sharps, flats } для родительского мажора: правая половина — диезы,
+// левая — бемоли, F♯/G♭ (6) — оба.
+function trainKeySigCounts(parentIdx){
+  if(parentIdx === 0) return { sharps:0, flats:0 };
+  if(parentIdx === 6) return { sharps:6, flats:6 };
+  if(parentIdx < 6)   return { sharps:parentIdx, flats:0 };
+  return { sharps:0, flats:12 - parentIdx };
+}
+
+function keySigEl(tag, attrs, parent){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+
+// ставит текст так, чтобы его ближний к центру круга край был ровно
+// на расстоянии r от центра (одинаковый отступ в любой точке круга)
+// Возвращает расстояние от центра круга до дальнего края текста.
+function keySigPlaceOut(textEl, r, angle){
+  const b = textEl.getBBox();
+  const th = angle * Math.PI / 180;
+  const ext = Math.abs(b.width / 2 * Math.sin(th)) + Math.abs(b.height / 2 * Math.cos(th));
+  const p = polar(CX, CY, r + ext, angle);
+  textEl.setAttribute('x', p.x);
+  textEl.setAttribute('y', p.y);
+  return r + 2 * ext;
+}
+
+// то же, но внутрь круга: дальний от центра край текста — на расстоянии r
+function keySigPlaceIn(textEl, r, angle){
+  const b = textEl.getBBox();
+  const th = angle * Math.PI / 180;
+  const ext = Math.abs(b.width / 2 * Math.sin(th)) + Math.abs(b.height / 2 * Math.cos(th));
+  const p = polar(CX, CY, Math.max(0, r - ext), angle);
+  textEl.setAttribute('x', p.x);
+  textEl.setAttribute('y', p.y);
+}
+
+function drawTrainKeySigLine(type, n, r){
+  const pos = type === 'sharp' ? KEYSIG_SHARP_POS : KEYSIG_FLAT_POS;
+  const names = type === 'sharp' ? KEYSIG_SHARP_NAMES : KEYSIG_FLAT_NAMES;
+  const color = 'var(--keysig-line)';
+  const sign = type === 'sharp' ? 1 : -1;       // диезы по часовой, бемоли против
+  const a0 = trA(pos[0] * 30);
+  const a1 = a0 + sign * 30 * (n - 1);
+  if(n > 1){
+    const p0 = polar(CX, CY, r, a0), p1 = polar(CX, CY, r, a1);
+    keySigEl('path', {
+      d:`M ${p0.x} ${p0.y} A ${r} ${r} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${sign > 0 ? 1 : 0} ${p1.x} ${p1.y}`,
+      fill:'none', stroke:color, 'stroke-width':TRAIN_KEYSIG_ARC_WIDTH, 'stroke-linecap':'round'
+    }, trainKeySigLayer);
+  }
+  for(let j = 0; j < n; j++){
+    const a = a0 + sign * 30 * j;
+    const p = polar(CX, CY, r, a);
+    keySigEl('circle', { cx:p.x, cy:p.y, r:TRAIN_KEYSIG_BADGE_RADIUS, fill:color }, trainKeySigLayer);
+    const num = keySigEl('text', {
+      x:p.x, y:p.y + 0.5, fill:'var(--bg)', 'text-anchor':'middle', 'dominant-baseline':'central',
+      'font-size':TRAIN_KEYSIG_BADGE_FONT_SIZE, 'font-weight':'bold'
+    }, trainKeySigLayer);
+    num.style.fontFamily = 'var(--font)';
+    num.textContent = j + 1;
+    const t = keySigEl('text', {
+      x:0, y:0, fill:color, 'text-anchor':'middle', 'dominant-baseline':'central',
+      'font-size':TRAIN_KEYSIG_NOTE_FONT_SIZE, 'font-weight':'bold'
+    }, trainKeySigLayer);
+    t.style.fontFamily = 'var(--font)';
+    t.textContent = noteDisplay(names[j]);
+    keySigPlaceOut(t, r + TRAIN_KEYSIG_NOTE_GAP, a);
+  }
+}
+
+// Перерисовывает цифру и линию под текущее состояние (лад, нажатая
+// тоника, галка, поворот круга). Вызывается при нажатии/снятии тоники,
+// смене лада, повороте круга, переключении ABC/до-ре-ми и галки.
+function updateTrainKeySig(){
+  if(typeof trainSvg === 'undefined' || !trainSvg) return;
+  if(!trainKeySigLayer){
+    trainKeySigLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    trainKeySigLayer.setAttribute('id', 'trainKeySigLayer');
+    trainKeySigLayer.style.pointerEvents = 'none';
+  }
+  while(trainKeySigLayer.firstChild) trainKeySigLayer.removeChild(trainKeySigLayer.firstChild);
+  trainSvg.appendChild(trainKeySigLayer);   // всегда поверх остального
+
+  let modeType = null, ring = null, idx = null;
+  try{ modeType = trainModeType; ring = pressedTrainTonicRing; idx = pressedTrainTonicIndex; }catch(e){ return; }
+  const cfg = modeType ? trainModeCfg(modeType) : null;
+  if(!cfg || ring === null || idx === null) return;
+
+  const counts = trainKeySigCounts(trainKeySigParentIndex(ring, idx, cfg));
+
+  // цифра количества знаков у тоники — всегда на своём месте
+  const label = keySigEl('text', {
+    x:0, y:0, fill:TRAIN_KEYSIG_COUNT_COLOR, 'text-anchor':'middle', 'dominant-baseline':'central',
+    'font-size':TRAIN_KEYSIG_COUNT_FONT_SIZE, 'font-weight':'bold'
+  }, trainKeySigLayer);
+  label.style.fontFamily = TRAIN_KEYSIG_COUNT_FONT_FAMILY;
+  const parts = [];
+  if(counts.sharps) parts.push(counts.sharps + '♯');
+  if(counts.flats)  parts.push(counts.flats + '♭');
+  label.textContent = parts.length ? parts.join(' / ') : '0';
+  // тоника на минорном кольце — цифра внутри круга, на мажорном — снаружи
+  let countFar = TRAIN_KEYSIG_COUNT_RADIUS;
+  if(ring === 'minor') keySigPlaceIn(label, TRAIN_KEYSIG_COUNT_RADIUS_MINOR, trA(idx * 30));
+  else countFar = keySigPlaceOut(label, TRAIN_KEYSIG_COUNT_RADIUS, trA(idx * 30));
+
+  // линия по нотам со знаками — дальше цифры, чтобы не пересекались
+  if(trainKeySigArcOn){
+    const arcR = Math.max(TRAIN_KEYSIG_COUNT_RADIUS + TRAIN_KEYSIG_ARC_OFFSET,
+                          countFar + TRAIN_KEYSIG_BADGE_RADIUS + 4);
+    if(counts.sharps) drawTrainKeySigLine('sharp', counts.sharps, arcR);
+    if(counts.flats)  drawTrainKeySigLine('flat', counts.flats, arcR);
+  }
+}
+
+(function(){
+  const cb = document.getElementById('trainKeySigArcCheckbox');
+  if(!cb) return;
+  cb.checked = trainKeySigArcOn;
+  cb.addEventListener('change', ()=>{
+    trainKeySigArcOn = cb.checked;
+    try{ localStorage.setItem(TRAIN_KEYSIG_ARC_KEY, trainKeySigArcOn ? '1' : '0'); }catch(e){}
+    updateTrainKeySig();
+    if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();
+  });
+})();
+updateTrainKeySig();
+if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();
+
+// Галка "Реальные ноты лада" — см. applyTrainRealModeNotes()
+(function(){
+  const cb = document.getElementById('trainRealModeNotesCheckbox');
+  if(!cb) return;
+  cb.checked = trainRealModeNotesOn;
+  cb.addEventListener('change', ()=>{
+    trainRealModeNotesOn = cb.checked;
+    try{ localStorage.setItem(TRAIN_REAL_MODE_NOTES_KEY, trainRealModeNotesOn ? '1' : '0'); }catch(e){}
+    if(trainModeType && pressedTrainTonicRing !== null){
+      clearTriadHighlights();
+      highlightModeForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    }
+  });
+})();
 
 /* =========================================================
    Переключение режимов: Практика / Обучение
