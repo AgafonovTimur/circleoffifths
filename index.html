@@ -735,6 +735,18 @@
   #sidePanelPinRow.wrapped .sidePanelPinOptions{
     margin-left:24px;
   }
+  /* "Все горячие клавиши" + (i) — строкой ниже галок "Отображать настройки" */
+  #hotkeysInfoRow{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  /* Широкая подсказка (список горячих клавиш) */
+  #globalInfoTooltip.tipWide{
+    max-width:min(560px, 94vw);
+    font-size:14px;
+    line-height:1.35;
+  }
   .sidePanelPinOption{
     display:flex;
     align-items:center;
@@ -794,87 +806,88 @@
     pointer-events:auto;
     transform:translate(0,-50%);
   }
-  /* На мобильной раскладке места слева от круга нет — режим "сбоку"
-     там не применяется (см. isMobile-проверку в JS), панель всегда
-     остаётся обычной выезжающей снизу шторкой. */
+  /* ===== Мобильная версия панели настроек — как в "Слухе" (ear-trainer):
+     окно по центру экрана, ширина — экран минус 10px, высота 92% экрана,
+     появляется плавно (прозрачность + небольшое увеличение с 97% до 100%).
+     Режим "сбоку от круга" на телефоне не применяется (см. isMobile в JS). */
+  body.is-mobile #sidePanel,
   body.is-mobile #sidePanel.pinned{
     position:fixed;
     left:50%;
     right:auto;
-    top:auto;
-    bottom:0;
-    width:520px;
-    max-width:520px;
-    margin-left:-260px;
-    margin-right:0;
-    /* Сдвиг вниз должен учитывать масштаб панели (--mp-scale): translateY
-       в процентах считается от НЕмасштабированной высоты, а видимая высота
-       после scale() больше в --mp-scale раз. Без умножения на масштаб на
-       широком экране (телефон в landscape, scale > 1) закрытая панель
-       оставалась частично видимой поверх экрана — казалось, что настройки
-       не закрываются. */
-    transform:translateY(calc(100% * var(--mp-scale,1) + 8px)) scale(var(--mp-scale,1));
-    transform-origin:50% 100%;
-  }
-  /* ===== Мобильная версия панели настроек: выезжающая снизу шторка
-     (bottom-sheet), открывается двойным тапом по свободному месту
-     экрана, закрывается тапом вне панели или тапом двумя пальцами. Настройки внутри — те же самые, но
-     позиционирование и способ открытия/закрытия — отдельные от
-     десктопной версии и не пересекаются с ней (десктоп управляется
-     колесом мыши и клавишей W, мобильная — тапами). ===== */
-  /* Ширина панели на мобильной раскладке НЕ растягивается под ширину
-     экрана (как раньше — width:100%, из-за чего кнопки внутри "плыли"
-     и становились непропорционально широкими). Вместо этого ширина
-     остаётся точно такой же, как на десктопе (520px — см. #sidePanel
-     выше), а вся панель целиком масштабируется через CSS transform:
-     scale() под ширину экрана (переменная --mp-scale считается и
-     обновляется в JS, см. updateMobilePanelScale()). Так все кнопки,
-     отступы и шрифты внутри увеличиваются СТРОГО пропорционально друг
-     другу — как физический зум экрана, а не "резиновая" вёрстка. */
-  body.is-mobile #sidePanel{
-    left:50%;
-    right:auto;
-    top:auto;
-    bottom:0;
-    width:520px;
-    max-width:520px;
-    margin-left:-260px;
-    --mp-scale:1;
-    /* Закрытая панель уезжает вниз на свою ВИДИМУЮ высоту. translateY в
-       процентах считается от высоты ДО scale(), а видимая высота после
-       scale() больше в --mp-scale раз — поэтому сдвиг умножается на
-       --mp-scale (+8px запас на тень). Раньше здесь было просто
-       translateY(100%), и на широком экране (телефон в landscape, где
-       масштаб > 1) закрытая панель оставалась частично видимой поверх
-       экрана и перехватывала касания — выглядело так, будто настройки
-       не закрываются. */
-    transform:translateY(calc(100% * var(--mp-scale,1) + 8px)) scale(var(--mp-scale,1));
-    transform-origin:50% 100%;
-    /* Панель должна открываться СРАЗУ на 90% высоты экрана (а не
-       вырастать под контент и требовать докрутки до неё) — поэтому
-       задаём фиксированную height, а не только max-height. Внутри
-       панель прокручивается (overflow:auto унаследовано от базового
-       #sidePanel) до последней строки, если контента больше, чем
-       помещается в эти 90vh. Делим на --mp-scale по той же причине,
-       что и раньше (масштаб экрана компенсируется CSS-scale, поэтому
-       "физическая" высота до scale должна быть больше на 1/scale). */
-    height:calc(90vh / var(--mp-scale,1));
-    max-height:calc(90vh / var(--mp-scale,1));
-    border-radius:16px 16px 0 0;
-    transition:transform 0.25s ease;
+    top:50%;
+    bottom:auto;
+    width:calc(100vw - 10px);
+    max-width:calc(100vw - 10px);
+    height:92vh;
+    max-height:96vh;
+    margin:0;
+    padding:14px 10px;
+    gap:14px;
+    border-radius:8px;
+    transform:translate(-50%,-50%) scale(0.97);
+    transform-origin:50% 50%;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
     touch-action:pan-y;
   }
   body.is-mobile #sidePanel.open{
-    transform:translateY(0) scale(var(--mp-scale,1));
+    transform:translate(-50%,-50%) scale(1);
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
   }
   body.is-mobile #sidePanelBackdrop{
-    transition:opacity 0.25s ease;
+    transition:opacity 0.3s ease;
     opacity:0;
     pointer-events:none;
   }
   body.is-mobile #sidePanelBackdrop.open{
     opacity:1;
     pointer-events:auto;
+  }
+  /* ---- Размеры внутри панели на телефоне — как в "Слухе" ---- */
+  /* заголовки блоков: 13px жирный */
+  body.is-mobile #sidePanel #selectHeader,
+  body.is-mobile #sidePanel #selectHeader2,
+  body.is-mobile #sidePanel #selectHeader3,
+  body.is-mobile #sidePanel #level2TypeHeader,
+  body.is-mobile #sidePanel #level3ModeHeader,
+  body.is-mobile #sidePanel #notesInputHeader,
+  body.is-mobile #sidePanel .cofBoxTitle,
+  body.is-mobile #sidePanel .trainAltNoteGroupTitle{
+    font-size:13px;
+  }
+  /* расстояние между блоками внутри вкладок: 10px */
+  body.is-mobile #sidePanel #level1Panel,
+  body.is-mobile #sidePanel #level2Panel,
+  body.is-mobile #sidePanel #level3Panel{
+    gap:10px;
+  }
+  /* кнопки типов аккордов в сетке: отступы 9/2px */
+  body.is-mobile #sidePanel #level2TypeButtons .ringBtn{
+    padding:9px 2px;
+  }
+  /* галка + текст: расстояние 8px */
+  body.is-mobile #sidePanel label:has(> input[type="checkbox"]){
+    gap:8px;
+  }
+  /* "Отображать настройки: слева/по центру/справа" — заблокировано,
+     как в "Слухе" (на телефоне панель всегда по центру) */
+  body.is-mobile #sidePanel .sidePanelPinLabel,
+  body.is-mobile #sidePanel .sidePanelPinOptions{
+    opacity:0.4;
+    pointer-events:none;
+  }
+  body.is-mobile #sidePanel .sidePanelPinOptions{
+    gap:8px 12px;
+  }
+  /* MIDI: если подпись и выпадающий список не помещаются в строку —
+     список переносится под подпись */
+  body.is-mobile #sidePanel .midiPanelRow{
+    flex-wrap:wrap;
   }
   /* Верхние вкладки "Практика 1 / Практика 2 / Обучение" — как на макете.
      Переключают, какой уровень/режим отображается ниже; настройки
@@ -991,6 +1004,14 @@
     flex-direction:column;
     align-items:center;
     gap:12px;
+    width:100%;
+  }
+  #notesInputBlock{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    align-self:stretch;
+    gap:10px;
     width:100%;
   }
   #notesInputHeader{
@@ -1214,15 +1235,24 @@
      Без галки круг остаётся точно по центру, как и был. */
   body.is-mobile.mobile-piano-on #circleInner,
   body.is-mobile.mobile-piano-on #trainCircleInner{
-    transform:translateY(-15vh);
+    /* --mobile-extra-shift — дополнительный подъём круга "Аккордов/Ладов"
+       в режиме "Назови аккорд/лад" на телефоне, когда круг уменьшается,
+       чтобы под ним поместились кнопки ответов (считает JS, см.
+       layoutL3NameAnswersMobile). В остальных случаях он равен 0. */
+    transform:translateY(calc(-15vh - var(--mobile-extra-shift, 0px)));
     transition:transform 0.2s ease;
   }
   /* Кнопки обращений под клавиатурой: на телефоне ряд из 4 кнопок
      фиксированной ширины не помещается — растягиваем по ширине
      клавиатуры и уменьшаем шрифт. */
   body.is-mobile #trainInversionBtns{
-    left:0;
-    width:100%;
+    /* Ширина ряда — по ширине нарисованной клавиатуры (--mobile-piano-w
+       ставит layoutMobilePiano), но не уже 300px и не шире экрана. Раньше
+       ряд всегда тянулся на весь экран — в горизонтальном положении
+       телефона кнопки были намного шире клавиатуры. */
+    left:50%;
+    transform:translateX(-50%);
+    width:min(100%, max(var(--mobile-piano-w, 100%), 300px));
     margin-left:0;
     justify-content:center;
   }
@@ -1453,6 +1483,15 @@
   .trainAltNoteRow input[type="checkbox"]{
     cursor:pointer;
   }
+  /* Галка "Реальные ноты лада" включена — "Показать альтернативную ноту"
+     отключается (серый цвет, не нажимается) */
+  .trainAltNoteRow.disabled, .trainAltNoteGroupTitle.disabled{
+    opacity:0.4;
+  }
+  .trainAltNoteRow.disabled label,
+  .trainAltNoteRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
+  }
   #trainLockKeyRow.disabled{
     opacity:0.4;
     cursor:not-allowed;
@@ -1500,7 +1539,7 @@
   }
   /* Подпункты "правильно"/"удобно": в "Обучении" — под "показывать
      стрелками обращения для трезвучий", в "Аккорды/Лады" — под
-     "Добавить обращения". Две галки в одну строку (при нехватке места
+     "Выбор обращения". Две галки в одну строку (при нехватке места
      переносятся), нажатой может быть только одна. */
   .invStyleRow{
     display:flex;
@@ -1665,10 +1704,9 @@
   #level3PianoUnderRow.disabled input[type="checkbox"]{
     cursor:not-allowed;
   }
-  /* ===== "добавить обращения" (Аккорды/Лады) =====
-     Строка чекбокса сдвинута вправо так же, как "Скрыть ячейки круга",
-     а ряд из 4 кнопок обращений идёт БЕЗ отступа — на всю ширину
-     панели настроек. */
+  /* ===== "Выбор обращения" (Аккорды/Лады) =====
+     Просто подзаголовок (без чекбокса), как в "Обучении"; ряд из 4
+     кнопок обращений идёт БЕЗ отступа — на всю ширину панели настроек. */
   /* Строка "Назови аккорд/лад" + инфо-иконка (i) — стоит первой,
      над "Показывать клавиатуру", без отступа. */
   #level3NameModeRow{
@@ -1682,14 +1720,14 @@
     align-items:center;
     align-self:flex-start;
     gap:6px;
+    font-family:var(--font);
+    font-size:16px;
+    color:var(--app-text-color);
   }
   /* при выбранном ладе обращения ни на что не влияют — строка гаснет
-     и чекбокс не нажимается (кнопки под ней гасит .ringBtn.disabled) */
+     (кнопки под ней гасит .ringBtn.disabled) */
   #level3InversionsRow.disabled{
     opacity:0.4;
-    cursor:not-allowed;
-  }
-  #level3InversionsRow.disabled input[type="checkbox"]{
     cursor:not-allowed;
   }
   #level3InversionBtns{
@@ -1976,6 +2014,13 @@
   }
   #trainChordGroups::-webkit-scrollbar{
     display:none;
+  }
+  /* На телефоне список не ограничиваем по высоте: панель настроек и так
+     прокручивается целиком, а внутренняя прокрутка без полосы прятала
+     нижние кнопки аккордов (их не было видно). */
+  body.is-mobile #trainChordGroups{
+    max-height:none;
+    overflow-y:visible;
   }
   .chordGridCard{
     display:grid;
@@ -2468,6 +2513,68 @@
   #sidePanel #dawOutPanel{
     gap:10px;
   }
+  /* ===== "Сыграть аккорд в": Без звука / Онлайн / DAW =====
+     Кнопки "за раз"/"по очереди" видны при "Онлайн" и "DAW", громкость и
+     тембр — только при "Онлайн", остальные поля DAW — только при "DAW". */
+  .soundOutBox:not([data-sound="daw"]) .dawOnly{ display:none !important; }
+  .soundOutBox[data-sound="mute"] .dawOnlineRow{ display:none !important; }
+  .soundOutBox:not([data-sound="online"]) .onlineOnly{ display:none !important; }
+  .soundOutModeRow .noteBtn.active{
+    background:var(--btn-active-bg);
+    color:var(--btn-active-text);
+  }
+  .soundOnlineFields{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .soundVolumeSlider{
+    flex:1;
+    min-width:0;
+    height:4px;
+    margin:0;
+    -webkit-appearance:none;
+    appearance:none;
+    background:var(--btn-bg);
+    border-radius:2px;
+    outline:none;
+    cursor:pointer;
+  }
+  .soundVolumeSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--btn-active-bg);
+    cursor:pointer;
+  }
+  .soundVolumeSlider::-moz-range-thumb{
+    width:14px;
+    height:14px;
+    border:none;
+    border-radius:50%;
+    background:var(--btn-active-bg);
+    cursor:pointer;
+  }
+  .soundVolumeVal{
+    min-width:40px;
+    text-align:right;
+    font-size:14px;
+  }
+  .soundTimbreHint{
+    font-family:var(--font);
+    font-size:12px;
+    color:var(--app-text-color);
+    opacity:0.7;
+  }
+  /* ===== Скрытие курсора мыши =====
+     Клавиша V / М — курсор пропадает; движение мыши — снова появляется
+     (см. скрипт в конце файла). */
+  body.cursor-idle,
+  body.cursor-idle *{
+    cursor:none !important;
+  }
 </style>
 </head>
 <body>
@@ -2540,6 +2647,12 @@
       <label class="sidePanelPinOption"><input type="checkbox" id="sidePanelPinCenterCheckbox"><span data-i18n="sidePanelPinCenter">По центру</span></label>
       <label class="sidePanelPinOption"><input type="checkbox" id="sidePanelPinRightCheckbox"><span data-i18n="sidePanelPinRight">Справа</span></label>
     </div>
+    <!-- "Все горячие клавиши" + (i) со списком. Текст списка — ОДНО поле
+         HOTKEYS_HELP_TEXT в начале <script> (редактировать там). -->
+    <div id="hotkeysInfoRow">
+      <span data-i18n="allHotkeys">Все горячие клавиши</span>
+      <span class="infoIcon" id="hotkeysInfoIcon" data-tip-plain data-tip-wide>i</span>
+    </div>
   </div>
 
   <!-- Вторая копия строки выбора темы — для вкладок "Ноты" и
@@ -2595,12 +2708,6 @@
   <div id="practicePanel">
 
     <div id="notesPanel">
-      <div id="notesInputHeader" data-i18n="notesInputHeader">Отвечать с помощью</div>
-      <div id="notesInputButtons" class="cofBox">
-        <button class="ringBtn" id="notesInputMouseBtn" type="button" data-i18n="notesInputMouse">Клик мыши</button>
-        <button class="ringBtn" id="notesInputMidiBtn" type="button" data-i18n="notesInputMidi">На MIDI/ПК клавиатуре</button>
-      </div>
-
       <div id="level1Panel">
         <div id="selectHeader" data-i18n="selectHeader">Выберите ноты</div>
         <div class="cofBox cofBoxCol">
@@ -2647,6 +2754,17 @@
              populateMidiSelect/populateDawOutputSelect и т.д. в <script>)
              синхронизирует ВСЕ копии между собой, так что выбор
              MIDI-устройства в любом месте сразу отражается везде. -->
+        <!-- "Отвечать с помощью" + 2 кнопки — сразу над блоком MIDI.
+             Переносится вместе с #notesMidiPanel между #level1Panel/
+             #level2Panel (см. updateNotesMidiPanelPosition()). -->
+        <div id="notesInputBlock">
+          <div id="notesInputHeader" data-i18n="notesInputHeader">Отвечать с помощью</div>
+          <div id="notesInputButtons" class="cofBox">
+            <button class="ringBtn" id="notesInputMouseBtn" type="button" data-i18n="notesInputMouse">Клик мыши</button>
+            <button class="ringBtn" id="notesInputMidiBtn" type="button" data-i18n="notesInputMidi">На MIDI/ПК клавиатуре</button>
+          </div>
+        </div>
+
         <div id="notesMidiPanel" class="midiPanelWrap">
           <div class="cofBoxTitle">MIDI</div>
           <div class="midiPanel midiPanelMini cofBox">
@@ -2671,6 +2789,29 @@
           </div>
           <div id="notesMidiStatusLine" class="midiStatusLine"></div>
           <button type="button" class="noteBtn midiReconnectBtn" id="notesMidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI</button>
+          </div>
+          <!-- "Сыграть аккорд в": копия переключателя из "Обучения" (Без звука /
+               Онлайн / DAW + общие "за раз"/"по очереди" + громкость/тембр).
+               Все копии синхронизированы (см. "Вывод звука" в <script>). -->
+          <div class="cofBoxTitle dawOutBoxTitle" data-i18n="dawOutTitle">Сыграть аккорд в</div>
+          <div class="midiPanel midiPanelMini cofBox soundOutBox" data-sound="mute">
+        <div class="dawOutBtnRow soundOutModeRow">
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="mute" data-i18n="soundOutMute">Без звука</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="online" data-i18n="soundOutOnline">Онлайн</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="daw">DAW</button>
+        </div>
+        <div class="onlineOnly soundOnlineFields">
+          <div class="midiPanelRow soundVolumeRow">
+            <span data-i18n="soundVolume">Громкость</span>
+            <input type="range" class="soundVolumeSlider" min="0" max="100" value="80">
+            <span class="soundVolumeVal">80%</span>
+          </div>
+          <div class="midiPanelRow">
+            <span data-i18n="soundTimbre">Тембр</span>
+            <select class="soundInstrumentSelect"></select>
+          </div>
+          <div class="soundTimbreHint" data-i18n="soundTimbreHint">Сэмплы загружаются из сети при выборе сторонних тембров.</div>
+        </div>
           </div>
         </div>
       </div>
@@ -2730,6 +2871,19 @@
           <button class="ringBtn" id="level3MMaj7Btn" type="button" data-chordtype="mmaj7">m(Maj7)</button>
           <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - @@1 b3 5 7.@@" data-i18n-tip="tipMMaj7L3">i</span>
         </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3Dom7b5Btn" type="button" data-chordtype="dom7b5">7b5</button>
+          <span class="infoIcon" data-tip="7b5 = Мажор с пониженной 5-й ступенью + малая 7-я ступень - 1 3 b5 b7." data-i18n-tip="tip7b5">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3Dom7s5Btn" type="button" data-chordtype="dom7s5">7#5</button>
+          <span class="infoIcon" data-tip="7#5 = Мажор с повышенной 5-й ступенью + малая 7-я ступень - 1 3 #5 b7." data-i18n-tip="tip7s5">i</span>
+        </div>
+
+        <div class="ringBtnRow rowStart">
+          <button class="ringBtn" id="level3Dom7Sus4Btn" type="button" data-chordtype="dom7sus4">7sus4</button>
+          <span class="infoIcon" data-tip="7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7." data-i18n-tip="tip7sus4">i</span>
+        </div>
 
         <div class="ringBtnRow rowStart">
           <button class="ringBtn" id="level3Add9Btn" type="button" data-chordtype="add9">add9</button>
@@ -2756,6 +2910,10 @@
         <div class="ringBtnRow rowStart">
           <button class="ringBtn" id="level3MMaj9Btn" type="button" data-chordtype="mmaj9">m(Maj9)</button>
           <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - @@1 b3 5 7 9(2).@@" data-i18n-tip="tipMMaj9L3">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3Six9Btn" type="button" data-chordtype="six9">6/9</button>
+          <span class="infoIcon" data-tip="6/9 = Мажор + большая 6-я ступень + большая 9-я ступень - 1 3 5 6 9(2)." data-i18n-tip="tip69">i</span>
         </div>
 
         <div class="ringBtnRow rowStart">
@@ -2872,7 +3030,7 @@
         <label id="level3HideWedgesRow"><input type="checkbox" id="level3HideWedgesCheckbox"><span data-i18n="hideWedges">Скрыть ячейки круга</span></label>
         <label id="level3PianoUnderRow"><input type="checkbox" id="level3PianoUnderCheckbox"><span data-i18n="pianoUnderNote">Клавиатура под нотой</span></label>
         <div id="level3InversionsRow">
-          <label><input type="checkbox" id="level3InversionsCheckbox"><span data-i18n="addInversions">Добавить обращения</span></label>
+          <span data-i18n="chooseInversion">Выбор обращения</span>
           <span class="infoIcon" data-i18n-tip="tipInversions" data-tip="Обращения работают только для первого, второго и третьего обращений(если третье есть). Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@">i</span>
         </div>
         <div id="level3InvStyleRow" class="invStyleRow" style="margin-left:24px;">
@@ -2913,6 +3071,33 @@
         <div id="l3MidiStatusLine" class="midiStatusLine"></div>
         <button type="button" class="noteBtn midiReconnectBtn" id="l3MidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI</button>
         </div>
+          <!-- "Сыграть аккорд в": копия переключателя из "Обучения" (Без звука /
+               Онлайн / DAW + общие "за раз"/"по очереди" + громкость/тембр).
+               Все копии синхронизированы (см. "Вывод звука" в <script>). -->
+          <div class="cofBoxTitle dawOutBoxTitle" data-i18n="dawOutTitle">Сыграть аккорд в</div>
+          <div class="midiPanel midiPanelMini cofBox soundOutBox" data-sound="mute">
+        <div class="dawOutBtnRow soundOutModeRow">
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="mute" data-i18n="soundOutMute">Без звука</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="online" data-i18n="soundOutOnline">Онлайн</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="daw">DAW</button>
+        </div>
+        <div class="dawOutBtnRow dawOnlineRow">
+          <button type="button" class="noteBtn" data-dawmode="together" data-tip="Сыграть аккорд" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlayTogetherBtn">Сыграть за раз</button>
+          <button type="button" class="noteBtn" data-dawmode="sequence" data-tip="Сыграть аккорд" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlaySequenceBtn">Сыграть по очереди</button>
+        </div>
+        <div class="onlineOnly soundOnlineFields">
+          <div class="midiPanelRow soundVolumeRow">
+            <span data-i18n="soundVolume">Громкость</span>
+            <input type="range" class="soundVolumeSlider" min="0" max="100" value="80">
+            <span class="soundVolumeVal">80%</span>
+          </div>
+          <div class="midiPanelRow">
+            <span data-i18n="soundTimbre">Тембр</span>
+            <select class="soundInstrumentSelect"></select>
+          </div>
+          <div class="soundTimbreHint" data-i18n="soundTimbreHint">Сэмплы загружаются из сети при выборе сторонних тембров.</div>
+        </div>
+          </div>
       </div>
     </div>
 
@@ -2978,6 +3163,19 @@
             <button class="ringBtn" id="trainMMaj7Btn" data-chord="mmaj7">m(Maj7)</button>
             <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - @@1 b3 5 7.@@" data-i18n-tip="tipMMaj7L3">i</span>
           </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainDom7b5Btn" data-chord="dom7b5">7b5</button>
+            <span class="infoIcon" data-tip="7b5 = Мажор с пониженной 5-й ступенью + малая 7-я ступень - 1 3 b5 b7." data-i18n-tip="tip7b5">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainDom7s5Btn" data-chord="dom7s5">7#5</button>
+            <span class="infoIcon" data-tip="7#5 = Мажор с повышенной 5-й ступенью + малая 7-я ступень - 1 3 #5 b7." data-i18n-tip="tip7s5">i</span>
+          </div>
+
+          <div class="ringBtnRow rowStart">
+            <button class="ringBtn" id="trainDom7Sus4Btn" data-chord="dom7sus4">7sus4</button>
+            <span class="infoIcon" data-tip="7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7." data-i18n-tip="tip7sus4">i</span>
+          </div>
 
           <div class="ringBtnRow rowStart">
             <button class="ringBtn" id="trainAdd9Btn" data-chord="add9">add9</button>
@@ -3004,6 +3202,10 @@
           <div class="ringBtnRow rowStart">
             <button class="ringBtn" id="trainMMaj9Btn" data-chord="mmaj9">m(Maj9)</button>
             <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - @@1 b3 5 7 9(2).@@" data-i18n-tip="tipMMaj9L3">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainSix9Btn" data-chord="six9">6/9</button>
+            <span class="infoIcon" data-tip="6/9 = Мажор + большая 6-я ступень + большая 9-я ступень - 1 3 5 6 9(2)." data-i18n-tip="tip69">i</span>
           </div>
 
           <div class="ringBtnRow rowStart">
@@ -3191,37 +3393,156 @@
         <button type="button" class="noteBtn midiReconnectBtn" id="midiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI</button>
       </div>
 
-      <div class="cofBoxTitle dawOutBoxTitle" data-i18n="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
-      <div id="dawOutBox" class="midiPanel cofBox">
-        <div class="dawOutBtnRow">
-          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlayTogetherBtn">Сыграть в DAW (за раз)</button>
-          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlaySequenceBtn">Сыграть в DAW (по очереди)</button>
+      <div class="cofBoxTitle dawOutBoxTitle" data-i18n="dawOutTitle">Сыграть аккорд в</div>
+      <div id="dawOutBox" class="midiPanel cofBox soundOutBox" data-sound="mute">
+        <div class="dawOutBtnRow soundOutModeRow">
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="mute" data-i18n="soundOutMute">Без звука</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="online" data-i18n="soundOutOnline">Онлайн</button>
+          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="daw">DAW</button>
         </div>
-        <div class="dawOutFieldRow">
-          <label for="dawIntervalInput" data-i18n="dawIntervalLabel">Интервал между нотами (сек):</label>
+        <div class="dawOutBtnRow dawOnlineRow">
+          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-dawmode="together" data-tip="Сыграть аккорд" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlayTogetherBtn">Сыграть за раз</button>
+          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-dawmode="sequence" data-tip="Сыграть аккорд" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlaySequenceBtn">Сыграть по очереди</button>
+        </div>
+        <div class="onlineOnly soundOnlineFields">
+          <div class="midiPanelRow soundVolumeRow">
+            <span data-i18n="soundVolume">Громкость</span>
+            <input type="range" class="soundVolumeSlider" min="0" max="100" value="80">
+            <span class="soundVolumeVal">80%</span>
+          </div>
+          <div class="midiPanelRow">
+            <span data-i18n="soundTimbre">Тембр</span>
+            <select class="soundInstrumentSelect"></select>
+          </div>
+          <div class="soundTimbreHint" data-i18n="soundTimbreHint">Сэмплы загружаются из сети при выборе сторонних тембров.</div>
+        </div>
+        <div class="dawOutFieldRow dawOnly">
+          <label data-i18n="dawIntervalLabel">Интервал между нотами (сек):</label>
           <input type="text" id="dawIntervalInput" inputmode="decimal" value="1">
         </div>
-        <div class="dawOutFieldRow">
-          <label for="dawVelocityInput">Velocity:</label>
+        <div class="dawOutFieldRow dawOnly">
+          <label>Velocity:</label>
           <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
         </div>
-        <div class="dawOutFormatBlock noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
+        <div class="dawOutFormatBlock noteNamingSwitchRow dawOnly" id="dawVelocityFormatSwitchRow">
           <div class="dawOutTitle" data-i18n="dawFormatTitle">Формат выхода:</div>
           <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">MIDI 1 (1-127)</button>
           <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">MIDI 2(1-65536)</button>
         </div>
 
-        <label class="dawOutFieldRow dawSplitToggleRow" for="dawSplitChannelsCheckbox">
+        <label class="dawOutFieldRow dawSplitToggleRow dawOnly" for="dawSplitChannelsCheckbox">
           <input type="checkbox" id="dawSplitChannelsCheckbox">
           <span style="flex:1;" data-i18n="splitChannels">Разделить сигнал на каналы</span>
         </label>
-        <div id="dawSplitChannelsPanel"></div>
+        <div id="dawSplitChannelsPanel" class="dawOnly"></div>
       </div>
   </div>
 
 </div>
 
 <script>
+
+/* =========================================================
+   СПИСОК ГОРЯЧИХ КЛАВИШ — подсказка (i) у надписи "Все горячие клавиши"
+   (под "Отображать настройки"). Весь текст — одно поле ниже: просто
+   правьте текст между обратными кавычками. Каждая строка — отдельная
+   строка в подсказке, пустая строка — разделительная черта.
+   ========================================================= */
+/* Три версии: ru — с русскими буквами клавиш, en/zh — только латиница
+   (подпись переключается вместе с языком, см. I18N.hotkeysHelp). */
+const HOTKEYS_HELP_TEXT = {
+ru:`Везде
+Y / Н или средняя кнопка мыши — открыть/закрыть настройки
+V / М — курсор мыши пропадает, двигаешь мышь — курсор появляется
++ — увеличить круг, - — уменьшить, Shift + - — обычный размер
+] / Ъ — увеличить клавиатуру-подсказку, [ / Х — уменьшить, Shift + [ — обычный размер
+
+Ноты (кроме вкладки «Ноты» с ответом мышью)
+A–G — нота
+Shift + A–G — диез
+Пробел, затем A–G — бемоль
+
+Обучение
+Повторное нажатие той же ноты (клавиатура ПК или MIDI) — минорное кольцо
+1–9, 0 — Мажор, Минор, Sus2, Sus4, 7, maj7, m7, m(Maj7), add9, m(add9)
+Пробел, затем 1–9, 0 — 9, maj9, m9, m(Maj9), add11, m(add11), 11, maj11, m11, m(Maj11)
+M / Ь — основной вид, , / Б — 1-е обращение, . / Ю — 2-е, / (на русской раскладке .) — 3-е
+← / → — повернуть круг
+Q / Й — «Стрелками», W / Ц — «Цветом»
+Колесо мыши — выбранная нота по кругу (вниз — по часовой, вверх — против)
+
+Аккорды/Лады
+Z / Я — подсказка на круге
+1–9, 0 и Пробел + цифра — добавить/убрать тип аккорда (порядок как в «Обучении»)
+«Назови аккорд/лад»: 1–9, 0 — ответы 1–10, Пробел + цифра — ответы 11–20
+
+MIDI
+Колесо Pitch Bend вверх — мажорное кольцо, вниз — минорное
+«Назови аккорд/лад»: белые клавиши C–B — ответы 1–7`,
+en:`Everywhere
+Y or middle mouse button — open/close settings
+V — hide the mouse cursor, move the mouse to show it again
++ — enlarge the circle, - — shrink, Shift + - — default size
+] — enlarge the hint keyboard, [ — shrink, Shift + [ — default size
+
+Notes (except the "Notes" tab with mouse answers)
+A–G — note
+Shift + A–G — sharp
+Space, then A–G — flat
+
+Training
+Pressing the same note again (computer keyboard or MIDI) — minor ring
+1–9, 0 — Major, Minor, Sus2, Sus4, 7, maj7, m7, m(Maj7), add9, m(add9)
+Space, then 1–9, 0 — 9, maj9, m9, m(Maj9), add11, m(add11), 11, maj11, m11, m(Maj11)
+M — root position, , — 1st inversion, . — 2nd, / — 3rd
+← / → — rotate the circle
+Q — "Arrows", W — "Color"
+Mouse wheel — move the selected note around the circle (down — clockwise, up — counterclockwise)
+
+Chords/Modes
+Z — hint on the circle
+1–9, 0 and Space + digit — add/remove a chord type (same order as in "Training")
+"Name the chord/mode": 1–9, 0 — answers 1–10, Space + digit — answers 11–20
+
+MIDI
+Pitch Bend wheel up — major ring, down — minor ring
+"Name the chord/mode": white keys C–B — answers 1–7`,
+zh:`通用
+Y 或鼠标中键 — 打开/关闭设置
+V — 隐藏鼠标光标，移动鼠标后光标重新出现
++ — 放大五度圈，- — 缩小，Shift + - — 恢复默认大小
+] — 放大提示键盘，[ — 缩小，Shift + [ — 恢复默认大小
+
+音符（“音符”标签页中用鼠标作答时除外）
+A–G — 音符
+Shift + A–G — 升号
+空格，然后 A–G — 降号
+
+训练
+再次按下同一个音（电脑键盘或 MIDI）— 小调环
+1–9、0 — 大调、小调、Sus2、Sus4、7、maj7、m7、m(Maj7)、add9、m(add9)
+空格，然后 1–9、0 — 9、maj9、m9、m(Maj9)、add11、m(add11)、11、maj11、m11、m(Maj11)
+M — 原位，, — 第一转位，. — 第二转位，/ — 第三转位
+← / → — 旋转五度圈
+Q — “箭头”，W — “颜色”
+鼠标滚轮 — 沿圈移动所选音符（向下 — 顺时针，向上 — 逆时针）
+
+和弦/调式
+Z — 圈上的提示
+1–9、0 及空格 + 数字 — 添加/移除和弦类型（顺序与“训练”中相同）
+“说出和弦/调式”：1–9、0 — 答案 1–10，空格 + 数字 — 答案 11–20
+
+MIDI
+弯音轮向上 — 大调环，向下 — 小调环
+“说出和弦/调式”：白键 C–B — 答案 1–7`
+};
+(function(){
+  const icon = document.getElementById('hotkeysInfoIcon');
+  if(icon){
+    icon.setAttribute('data-i18n-tip', 'hotkeysHelp');
+    icon.setAttribute('data-tip', HOTKEYS_HELP_TEXT.ru);
+  }
+})();
 
 /* =========================================================
    Масштабирование круга: объявлено в самом начале скрипта.
@@ -3463,6 +3784,7 @@ function setNoteNamingSystem(system){
    ========================================================= */
 const APP_LANG_KEY = 'circleAppLang';
 const I18N = {
+  hotkeysHelp:         HOTKEYS_HELP_TEXT,
   tabTraining:        { ru:'Обучение',  en:'Training',  zh:'训练' },
   tabNotes:            { ru:'Ноты',      en:'Notes',     zh:'音符' },
   tabChords:           { ru:'Аккорды/Лады', en:'Chords/Modes', zh:'和弦/调式' },
@@ -3483,6 +3805,7 @@ const I18N = {
   sidePanelPinLeft:    { ru:'Слева', en:'Left', zh:'左侧' },
   sidePanelPinCenter:  { ru:'По центру', en:'Center', zh:'居中' },
   sidePanelPinRight:   { ru:'Справа', en:'Right', zh:'右侧' },
+  allHotkeys:          { ru:'Все горячие клавиши', en:'All hotkeys', zh:'全部快捷键' },
   selectHeader:        { ru:'Выберите ноты', en:'Select notes', zh:'选择音符' },
   btnMajor:            { ru:'Мажор', en:'Major', zh:'大调' },
   btnMinor:            { ru:'Минор', en:'Minor', zh:'小调' },
@@ -3497,7 +3820,6 @@ const I18N = {
   chooseInversion:     { ru:'Выбор обращения', en:'Choose inversion', zh:'选择转位' },
   compactView:         { ru:'Компактный вид', en:'Compact view', zh:'紧凑视图' },
   showInversionArrows: { ru:'Показывать стрелками обращения', en:'Show inversions with arrows', zh:'用箭头显示转位' },
-  addInversions:       { ru:'Добавить обращения', en:'Add inversions', zh:'加入转位' },
   invStyleCorrect:     { ru:'Правильно', en:'Correct', zh:'正确' },
   invStyleAcc:         { ru:'С бемолями\\диезами', en:'With flats\\sharps', zh:'降号\\升号' },
   invStyleEasy:        { ru:'Удобно (beta)', en:'Convenient (beta)', zh:'方便 (beta)' },
@@ -3550,9 +3872,16 @@ const I18N = {
   webMidiUnsupported:  { ru:'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)', en:'Browser does not support Web MIDI (Chrome/Edge required)', zh:'浏览器不支持 Web MIDI（需要 Chrome/Edge）' },
   midiStatusDefault:   { ru:'MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.', en:'MIDI keyboard not connected. Press the button below to connect.', zh:'MIDI键盘未连接。请点击下方按钮进行连接。' },
   midiReconnectBtn:    { ru:'Подключить MIDI', en:'Connect MIDI', zh:'连接 MIDI' },
-  dawOutTitle:         { ru:'Сыграть аккорд в DAW (при нажатии на ячейку аккорда):', en:'Play chord in DAW (when clicking a chord cell):', zh:'在DAW中播放和弦（点击和弦单元格时）：' },
-  dawPlayTogetherBtn:  { ru:'Сыграть в DAW (за раз)', en:'Play in DAW (together)', zh:'在DAW中播放（同时）' },
-  dawPlaySequenceBtn:  { ru:'Сыграть в DAW (по очереди)', en:'Play in DAW (in sequence)', zh:'在DAW中播放（依次）' },
+  dawOutTitle:         { ru:'Сыграть аккорд в', en:'Play chord in', zh:'播放和弦于' },
+  soundOutMute:        { ru:'Без звука', en:'No sound', zh:'静音' },
+  soundOutOnline:      { ru:'Онлайн', en:'Online', zh:'在线' },
+  soundVolume:         { ru:'Громкость', en:'Volume', zh:'音量' },
+  soundTimbre:         { ru:'Тембр', en:'Timbre', zh:'音色' },
+  soundTimbreHint:     { ru:'Сэмплы загружаются из сети при выборе сторонних тембров.', en:'Samples are loaded from the network when a third-party timbre is selected.', zh:'选择第三方音色时，会从网络加载音色样本。' },
+  soundBuiltinSynth:   { ru:'Встроенный синтезатор (без интернета)', en:'Built-in synth (no internet)', zh:'内置合成器（无需联网）' },
+  soundSampleSuffix:   { ru:' (сэмпл из интернета)', en:' (sample from the internet)', zh:'（网络音色样本）' },
+  dawPlayTogetherBtn:  { ru:'Сыграть за раз', en:'Play together', zh:'同时播放' },
+  dawPlaySequenceBtn:  { ru:'Сыграть по очереди', en:'Play in sequence', zh:'依次播放' },
   dawIntervalLabel:    { ru:'Интервал между нотами (сек):', en:'Interval between notes (sec):', zh:'音符间隔（秒）：' },
   dawFormatTitle:      { ru:'Формат выхода:', en:'Output format:', zh:'输出格式：' },
   splitChannels:       { ru:'Разделить сигнал на каналы', en:'Split signal into channels', zh:'将信号分配到不同通道' },
@@ -3636,6 +3965,10 @@ const I18N = {
   tipMaj7: { ru:'maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7.', en:'maj7 (Major 7) = Major + major 7th degree - 1 3 5 7.', zh:'maj7（大七和弦）= 大调 + 大七度 - 1 3 5 7。' },
   tipM7: { ru:'m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7.', en:'m7 (Minor 7) = Minor + minor 7th degree - 1 b3 5 b7.', zh:'m7（小七和弦）= 小调 + 小七度 - 1 b3 5 b7。' },
   tipMMaj7: { ru:'m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7.', en:'m(Maj7) = Minor + major 7th degree - 1 b3 5 7.', zh:'m(Maj7) = 小调 + 大七度 - 1 b3 5 7。' },
+  tip7b5: { ru:'7b5 = Мажор с пониженной 5-й ступенью + малая 7-я ступень - 1 3 b5 b7.', en:'7b5 = Major with flat 5th degree + minor 7th degree - 1 3 b5 b7.', zh:'7b5 = 大调降五度 + 小七度 - 1 3 b5 b7。' },
+  tip7s5: { ru:'7#5 = Мажор с повышенной 5-й ступенью + малая 7-я ступень - 1 3 #5 b7.', en:'7#5 = Major with sharp 5th degree + minor 7th degree - 1 3 #5 b7.', zh:'7#5 = 大调升五度 + 小七度 - 1 3 #5 b7。' },
+  tip7sus4: { ru:'7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7.', en:'7sus4 = Sus4 + minor 7th degree - 1 4 5 b7.', zh:'7sus4 = Sus4 + 小七度 - 1 4 5 b7。' },
+  tip69: { ru:'6/9 = Мажор + большая 6-я ступень + большая 9-я ступень - 1 3 5 6 9(2).', en:'6/9 = Major + major 6th degree + major 9th degree - 1 3 5 6 9(2).', zh:'6/9 = 大调 + 大六度 + 大九度 - 1 3 5 6 9(2)。' },
   tipAdd9: { ru:'add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).', en:'add9 = Major + major 9th degree - 1 3 5 9(2).', zh:'add9 = 大调 + 大九度 - 1 3 5 9(2)。' },
   tipMAdd9: { ru:'m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).', en:'m(add9) = Minor + major 9th degree - 1 b3 5 9(2).', zh:'m(add9) = 小调 + 大九度 - 1 b3 5 9(2)。' },
   tip9: { ru:'9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2).', en:'9 (Dominant 9) = Major + minor 7th degree + major 9th degree - 1 3 5 b7 9(2).', zh:'9（属九和弦）= 大调 + 小七度 + 大九度 - 1 3 5 b7 9(2)。' },
@@ -3667,7 +4000,7 @@ const I18N = {
   tipArrowVariant1: { ru:'Цветом покрашены те же самые ноты на которые указывают стрелки.\nНиже аккорды из четырех и более нот разделены на группы по схожести друг с другом. Некоторые отличаются только одной повышенной/пониженной ступенью', en:'The notes the arrows point to are highlighted in color.\nBelow, chords of four or more notes are split into groups by similarity. Some differ by only one raised/lowered degree', zh:'箭头所指向的音符会以相同颜色标出。\n下方由四个及以上音组成的和弦按相似程度分组。有些和弦只相差一个升高/降低的级数' },
   tipTriadMaj: { ru:'Ступени мажора - @@1 3 5@@', en:'Major degrees - @@1 3 5@@', zh:'大三和弦级数 - @@1 3 5@@' },
   tipTriadMin: { ru:'Ступени минора - @@1 b3 5@@', en:'Minor degrees - @@1 b3 5@@', zh:'小三和弦级数 - @@1 b3 5@@' },
-  tipPlayInDaw: { ru:'Сыграть в DAW', en:'Play in DAW', zh:'在DAW中播放' },
+  tipPlayInDaw: { ru:'Сыграть аккорд', en:'Play chord', zh:'播放和弦' },
 };
 
 const DEGREE_LABEL_I18N = {
@@ -3676,6 +4009,9 @@ const DEGREE_LABEL_I18N = {
   3:  { ru:'Терция',    en:'Third',      zh:'三度' },
   4:  { ru:'Кварта',    en:'Fourth',     zh:'四度' },
   5:  { ru:'Квинта',    en:'Fifth',      zh:'五度' },
+  6:  { ru:'Секста',    en:'Sixth',      zh:'六度' },
+  'b5': { ru:'Пониженная квинта', en:'Flat fifth', zh:'降五度' },
+  '#5': { ru:'Повышенная квинта', en:'Sharp fifth', zh:'升五度' },
   7:  { ru:'Септима',   en:'Seventh',    zh:'七度' },
   9:  { ru:'Нона',      en:'Ninth',      zh:'九度' },
   11: { ru:'Ундецима',  en:'Eleventh',   zh:'十一度' },
@@ -3689,6 +4025,8 @@ function degreeLegendText(degree){
   const label = (DEGREE_LABEL_I18N[degree] || {})[appLang] || '';
   if(appLang === 'en') return `${label} — degree ${degree}`;
   if(appLang === 'zh') return `${label} — 第${degree}音级`;
+  // b5 / #5 (пониженная/повышенная квинта) — без окончания "я"
+  if(typeof degree === 'string') return `${label} — ступень ${degree}`;
   return `${label} — ${degree}я ступень`;
 }
 
@@ -3750,6 +4088,9 @@ function applyLanguage(lang){
   }catch(e){}
   try{
     if(typeof populateDawOutputSelect === 'function') populateDawOutputSelect();
+  }catch(e){}
+  try{
+    if(typeof populateSoundInstrumentSelects === 'function') populateSoundInstrumentSelects();
   }catch(e){}
 }
 
@@ -4250,6 +4591,7 @@ function pickNewChord(){
 
   rootHistory.push(rootOf(current.name));
   if(rootHistory.length > 3) rootHistory.shift();
+  playPracticeQuestionSound(1);
 }
 
 const FLASH_GREEN = 'var(--green-flash)';
@@ -4868,6 +5210,10 @@ function applyTrainRotationOffset(offset){
     // аналогичную проверку trainModeType в selectTrainTonic() выше).
     if(!trainModeType && trainDisplayMode === 'arrows'){
       buildTriadArrowsForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    } else if(!trainModeType){
+      if(!applyTrainCellsAccLabels(pressedTrainTonicRing, pressedTrainTonicIndex)){
+        applyTrainAltFifthLabel(trainChordType, pressedTrainTonicRing, pressedTrainTonicIndex);
+      }
     }
   }
 }
@@ -5029,7 +5375,9 @@ function refreshTrainAltNoteCell(ring, name){
     const c = TRAIN_ALT_NOTE_CHECKBOXES[id];
     return c.ring === ring && c.name === name;
   });
-  const checked = checkboxId ? !!trainAltNoteState[checkboxId] : false;
+  // при включённой галке "Реальные ноты лада" альтернативные ноты не
+  // показываются (выбор галок сохраняется и вернётся, когда её снимут)
+  const checked = checkboxId ? (!!trainAltNoteState[checkboxId] && !trainRealModeNotesOn) : false;
   if(checked){
     item.label.setAttribute('y', item.midY - TRAIN_ALT_NOTE_TOP_BOTTOM_GAP);
     item.altLine.style.display = '';
@@ -5061,6 +5409,22 @@ Object.keys(TRAIN_ALT_NOTE_CHECKBOXES).forEach(id=>{
 });
 
 refreshAllTrainAltNoteCells();
+
+// Галка "Реальные ноты лада" включена — чекбоксы "Показать альтернативную
+// ноту" (мажорный и минорный круг) становятся серыми и не нажимаются
+function applyTrainAltNoteLock(){
+  const locked = !!trainRealModeNotesOn;
+  Object.keys(TRAIN_ALT_NOTE_CHECKBOXES).forEach(id=>{
+    const cb = document.getElementById(id);
+    if(!cb) return;
+    cb.disabled = locked;
+    const row = cb.closest('.trainAltNoteRow');
+    if(row) row.classList.toggle('disabled', locked);
+  });
+  document.querySelectorAll('.trainAltNoteGroupTitle[data-i18n="altNoteMajorTitle"], .trainAltNoteGroupTitle[data-i18n="altNoteMinorTitle"]')
+    .forEach(el => el.classList.toggle('disabled', locked));
+  refreshAllTrainAltNoteCells();
+}
 
 /* =========================================================
    Буквы нот аккорда под каждой тоникой + ступени аккорда в углу
@@ -5180,6 +5544,8 @@ const TRAIN_CHORD_FORMULAS = {
   triadMajor:[0,4,7], triadMinor:[0,3,7],
   sus2:[0,2,7], sus4:[0,5,7],
   dom7:[0,4,7,10], maj7:[0,4,7,11], min7:[0,3,7,10], mmaj7:[0,3,7,11],
+  // 7b5, 7#5 (квинта понижена/повышена), 7sus4, 6/9
+  dom7b5:[0,4,6,10], dom7s5:[0,4,8,10], dom7sus4:[0,5,7,10], six9:[0,4,7,9,14],
   add9:[0,4,7,14], madd9:[0,3,7,14],
   dom9:[0,4,7,10,14], maj9:[0,4,7,11,14], m9:[0,3,7,10,14], mmaj9:[0,3,7,11,14],
   add11:[0,4,7,17], madd11:[0,3,7,17],
@@ -5216,8 +5582,19 @@ function trainChordFormula(chordType, ring){
   return TRAIN_CHORD_FORMULAS[chordType] || TRAIN_CHORD_FORMULAS.triadMajor;
 }
 
+/* Буква ноты аккорда по умолчанию выбирается по числу полутонов
+   (LETTER_STEP_BY_SEMITONE). Исключения — где ступень пишется другой
+   буквой: #5 (8 полутонов) у 7#5 — это повышенная квинта (C7#5: G#, а
+   не Ab). Ключ — тип аккорда, значение: интервал -> шаг по буквам. */
+const CHORD_LETTER_STEP_OVERRIDE = {
+  dom7s5: { 8: 4 }
+};
+function chordLetterStepFor(chordType, iv){
+  const o = CHORD_LETTER_STEP_OVERRIDE[chordType];
+  return (o && o[iv] !== undefined) ? o[iv] : undefined;
+}
 function trainChordLettersFor(noteRaw, ring, chordType){
-  return trainChordFormula(chordType, ring).map(iv => spellTrainInterval(noteRaw, iv));
+  return trainChordFormula(chordType, ring).map(iv => spellTrainInterval(noteRaw, iv, chordLetterStepFor(chordType, iv)));
 }
 
 /* =========================================================
@@ -5362,6 +5739,10 @@ const TRAIN_CHORD_DEGREE_NAMES = {
   maj7:   ['root','third','fifth','seventh'],
   min7:   ['root','third','fifth','seventh'],
   mmaj7:  ['root','third','fifth','seventh'],
+  dom7b5: ['root','third','fifth','seventh'],
+  dom7s5: ['root','third','fifth','seventh'],
+  dom7sus4: ['root','fourth','fifth','seventh'],
+  six9:   ['root','third','fifth','sixth','ninth'],
   add9:   ['root','third','fifth','ninth'],
   madd9:  ['root','third','fifth','ninth'],
   dom9:   ['root','third','fifth','seventh','ninth'],
@@ -5392,7 +5773,7 @@ function trainChordDegreeNamesFor(chordType, ring){
 const TRAIN_DEGREE_COLOR = {
   root:'var(--green)', second:'var(--yellow)', third:'var(--yellow)', fourth:'var(--yellow)',
   fifth:'var(--blue)', seventh:'var(--purple)', ninth:'var(--cyan)', eleventh:'var(--orange)',
-  thirteenth:'var(--lime)'
+  thirteenth:'var(--lime)', sixth:'var(--lime)'
 };
 const TRAIN_PIANO_ARROW_COLORS = ['var(--green)','var(--yellow)','var(--blue)','var(--purple)','var(--cyan)','var(--orange)','var(--lime)'];
 
@@ -5809,6 +6190,8 @@ function updateTrainInversionButtons(){
       // при включённой галке "показывать стрелками обращения для трезвучий"
       // от номера обращения зависит и набор стрелок на круге
       refreshTrainCircleArrows();
+      // выбранное обращение — новый аккорд: играем его (Онлайн / DAW)
+      if(typeof playCurrentTrainChordToDaw === 'function') playCurrentTrainChordToDaw();
     });
     trainInversionBtnsEl.appendChild(btn);
   }
@@ -5836,6 +6219,11 @@ function updateTrainInversionButtons(){
 const MOBILE_PIANO_SIDE_MARGIN = 12; // px, суммарный отступ клавиатуры от краёв экрана
 const MOBILE_PIANO_GAP = 12;         // px, зазор между низом круга и картинкой клавиатуры
 const MOBILE_PIANO_MAX_H_VH = 0.34;  // доля высоты экрана — потолок для высоты клавиатуры
+/* Горизонтальное положение телефона, вкладка "Обучение": под клавиатурой
+   ещё стоят кнопки обращений ("Основное/Первое/Второе"). С обычными долями
+   (круг 58% + клавиатура 34% высоты) кнопки уходили за нижний край экрана,
+   поэтому здесь круг и клавиатура чуть меньше. */
+const MOBILE_PIANO_MAX_H_VH_LANDSCAPE_TRAIN = 0.24;
 /* Круг с включённой клавиатурой поднят на 15% высоты экрана (см. CSS
    .mobile-piano-on ... translateY(-15vh)). Клавиатура прибита к нижнему
    краю круга и едет вместе с ним, поэтому на столько же она опустилась
@@ -5871,10 +6259,14 @@ function layoutMobilePiano(wrapEl, svgEl){
   if(!vbW || !vbH) return;
   const availW = Math.max(80, window.innerWidth - MOBILE_PIANO_SIDE_MARGIN);
   const refH = TRAIN_PIANO_ARROW_ZONE_H + TRAIN_PIANO_WHITE_H;
-  const baseScale = Math.min(availW / mobilePianoRefWidth(), (window.innerHeight * MOBILE_PIANO_MAX_H_VH) / refH);
+  const landTrain = wrapEl.id === 'trainPianoWrap' && window.innerWidth > window.innerHeight;
+  const maxHvh = landTrain ? MOBILE_PIANO_MAX_H_VH_LANDSCAPE_TRAIN : MOBILE_PIANO_MAX_H_VH;
+  const baseScale = Math.min(availW / mobilePianoRefWidth(), (window.innerHeight * maxHvh) / refH);
   const scale = Math.min(baseScale, availW / vbW);
   svgEl.style.width = (vbW * scale) + 'px';
   svgEl.style.height = (vbH * scale) + 'px';
+  // ширина клавиатуры — по ней выравнивается ряд кнопок обращений
+  wrapEl.style.setProperty('--mobile-piano-w', (vbW * scale) + 'px');
   // компенсация «усохшей» зоны стрелок — держит верхний край клавиш на
   // месте; минус MOBILE_PIANO_UP_VH — подтягивание клавиатуры вверх вслед
   // за опущенным кругом (см. комментарий у константы)
@@ -5901,19 +6293,33 @@ function updateMobilePianoGeometry(){
    try/catch — страховка от обращения к переменным настроек до того,
    как выполнилась их строка объявления (эта функция может быть вызвана
    очень рано, при первичной раскладке вкладок). */
+var __mobilePianoModeKey = '';
 function updateMobilePianoLayout(){
   let on = false;
   try{
     if(isMobile){
       if(appMode === 'training') on = !!trainShowPiano || trainInvButtonsWanted();
-      else if(appMode === 'practice' && practiceLevel === 3) on = !!l3ShowPiano;
+      // "Назови аккорд/лад" в вертикальном положении телефона: круг тоже
+      // поднимается — под ним стоят кнопки ответов (в горизонтальном
+      // положении кнопки встают сбоку от круга, подъём не нужен)
+      else if(appMode === 'practice' && practiceLevel === 3)
+        on = !!l3ShowPiano || (!!l3NameMode && window.innerHeight >= window.innerWidth);
     }
   }catch(e){ on = false; }
-  const changed = document.body.classList.contains('mobile-piano-on') !== on;
+  // Размер круга зависит ещё и от вкладки (в "Обучении" в горизонтальном
+  // положении он меньше — см. circleFitScale), поэтому пересчитываем и
+  // при смене вкладки, а не только при смене класса.
+  let modeKey = '';
+  try{ modeKey = String(appMode); }catch(e){}
+  const changed = document.body.classList.contains('mobile-piano-on') !== on
+    || __mobilePianoModeKey !== modeKey;
+  __mobilePianoModeKey = modeKey;
   document.body.classList.toggle('mobile-piano-on', on);
   // Размер круга на телефоне зависит от того, освобождено ли место под
   // клавиатуру (см. circleFitScale) — пересчитываем при переключении.
-  if(changed && typeof applyZoom === 'function') applyZoom();
+  // try/catch — на самых ранних вызовах (до объявления isMobile и т.п.)
+  // пересчёт невозможен; он всё равно выполняется в конце скрипта.
+  if(changed && typeof applyZoom === 'function'){ try{ applyZoom(); }catch(e){} }
 }
 
 function updateTrainPiano(){
@@ -6662,12 +7068,17 @@ function updateNotesPairsRowUi(){
   row.style.display = onNotesTab ? 'flex' : 'none';
   if(pairsCb) pairsCb.checked = notesPairsMode;
   if(hideRow){
-    hideRow.style.display = (onNotesTab && practiceLevel === 2) ? 'flex' : 'none';
-    hideRow.classList.toggle('disabled', !notesPairsMode);
+    // Строка "Скрыть круг" видна всегда (чтобы настройки не дёргались
+    // при переключении способа ответа), но нажать её можно только при
+    // включённых "Парах" и ответе "На MIDI/ПК клавиатуре". При "Клик
+    // мыши" она серая и не нажимается.
+    const hideAllowed = notesPairsMode && practiceLevel === 2;
+    hideRow.style.display = onNotesTab ? 'flex' : 'none';
+    hideRow.classList.toggle('disabled', !hideAllowed);
   }
   if(hideCb){
     hideCb.checked = notesPairsHideCircle;
-    hideCb.disabled = !notesPairsMode;
+    hideCb.disabled = !(notesPairsMode && practiceLevel === 2);
   }
 }
 
@@ -6984,7 +7395,8 @@ const INV_DEGREE_STYLE = {
   seventh:    { color:'var(--purple)', marker:'trainArrowHead_seventh' },
   ninth:      { color:'var(--cyan)',   marker:'trainArrowHead_ninth' },
   eleventh:   { color:'var(--orange)', marker:'trainArrowHead_eleventh' },
-  thirteenth: { color:'var(--lime)',   marker:'trainArrowHead_thirteenth' }
+  thirteenth: { color:'var(--lime)',   marker:'trainArrowHead_thirteenth' },
+  sixth:      { color:'var(--lime)',   marker:'trainArrowHead_sixth' }
 };
 
 function triadInversionArrowStyle(from, to){
@@ -7116,7 +7528,13 @@ const EXT_CHORD_DEGREES = {
   dom13:   { fifth:1, third:4,  seventh:-2, ninth:2, eleventh:-1, thirteenth:3 },
   maj13:   { fifth:1, third:4,  seventh:5,  ninth:2, eleventh:-1, thirteenth:3 },
   m13:     { fifth:1, third:-3, seventh:-2, ninth:2, eleventh:-1, thirteenth:3 },
-  mmaj13:  { fifth:1, third:-3, seventh:5,  ninth:2, eleventh:-1, thirteenth:3 }
+  mmaj13:  { fifth:1, third:-3, seventh:5,  ninth:2, eleventh:-1, thirteenth:3 },
+  // 7b5 / 7#5: пониженная/повышенная квинта стоит на ячейке квинты (C7b5 —
+  // ячейка G с красным ♭, C7#5 — G с красным ♯), см. ALT_FIFTH_TYPES
+  dom7b5:   { fifth:1, third:4,  seventh:-2 },
+  dom7s5:   { fifth:1, third:4,  seventh:-2 },
+  dom7sus4: { fifth:1, fourth:-1, seventh:-2 },
+  six9:     { fifth:1, third:4,  sixth:3, ninth:2 }
 };
 const EXT_DEGREE_STYLE = {
   fifth:      { startPoint:'extP1', stubLength:40,  color:'var(--blue)'   },
@@ -7124,7 +7542,9 @@ const EXT_DEGREE_STYLE = {
   seventh:    { startPoint:'extP3', stubLength:80,  color:'var(--purple)' },
   ninth:      { startPoint:'extP4', stubLength:100, color:'var(--cyan)'   },
   eleventh:   { startPoint:'extP5', stubLength:120, color:'var(--orange)' },
-  thirteenth: { startPoint:'extP6', stubLength:140, color:'var(--lime)'   }
+  thirteenth: { startPoint:'extP6', stubLength:140, color:'var(--lime)'   },
+  fourth:     { startPoint:'extP2', stubLength:60,  color:'var(--yellow)' },
+  sixth:      { startPoint:'extP5', stubLength:120, color:'var(--lime)'   }
 };
 Object.keys(EXT_CHORD_DEGREES).forEach(chordKey=>{
   const degrees = EXT_CHORD_DEGREES[chordKey];
@@ -8539,6 +8959,40 @@ const TRIAD_INVERSION_ARC_STUB = 40;       // высота первой дуги
 const TRIAD_INVERSION_ARC_STUB_STEP = 20;  // каждая следующая дуга аккорда выше на столько
 
 
+/* 7b5 / 7#5: пониженная/повышенная квинта всегда стоит на ячейке квинты
+   (соседняя справа на кольце тоники) с красным знаком — C7b5: ячейка G с
+   ♭, C7#5: ячейка G с ♯ (Am -> ячейка Em). Так во всех схемах: "Цветом",
+   "С бемолями\\диезами", "Правильно", во вкладке "Аккорды/Лады".
+   Значение — на сколько полутонов квинта изменена. Номер ноты в формуле
+   аккорда — 2 (тоника, терция, квинта, септима). */
+const ALT_FIFTH_TYPES = { dom7b5: -1, dom7s5: 1 };
+const ALT_FIFTH_NOTE_INDEX = 2;
+function altFifthCell(chordType, ring, tonicIndex){
+  const alter = ALT_FIFTH_TYPES[chordType];
+  if(!alter) return null;
+  const idx = (tonicIndex + 1) % 12;
+  const tonicName = (ring === 'minor' ? minors : majors)[tonicIndex];
+  const letters = trainChordLettersFor(tonicName, ring, chordType);
+  const spelled = letters[ALT_FIFTH_NOTE_INDEX];
+  const cellPc = (ring === 'minor' ? minorsSemitone : majorsSemitone)[idx];
+  return {
+    ring, idx, degree: 'fifth', alter,
+    letter: spelled[0],
+    sign: accSignFor(spelled, alter),
+    pc: ((cellPc + alter) % 12 + 12) % 12
+  };
+}
+// > 0, пока подсветка "Цветом" вызывается только для подсчёта ячеек
+// (rootSchemeCells, l3NameChordCells) — тогда подписи круга не трогаем
+var trainHighlightProbe = 0;
+// "Цветом": подпись ячейки квинты у 7b5/7#5 (G с красным ♭/♯)
+function applyTrainAltFifthLabel(chordType, ring, tonicIndex){
+  const c = altFifthCell(chordType, ring, tonicIndex);
+  if(!c) return;
+  const item = trainWedgeMap[c.ring + '-' + c.idx];
+  if(item) setTrainAccLabel(item, c.letter, c.sign);
+}
+
 // ступень аккорда по интервалу формулы (в полутонах от тоники)
 function chordDegreeKeyOfInterval(iv){
   switch(iv){
@@ -8549,6 +9003,7 @@ function chordDegreeKeyOfInterval(iv){
     case 7: return 'fifth';
     case 10: case 11: return 'seventh';
     case 14: return 'ninth';
+    case 9: return 'sixth';
     case 17: return 'eleventh';
     case 21: return 'thirteenth';
     default: return 'fifth';
@@ -8569,6 +9024,7 @@ function rootSchemeCells(chordType, ring, tonicIndex){
   const savedType = trainChordType;
   const savedSetWedge = setWedgeInstant;
   const before = highlightedTrainWedges.length;
+  trainHighlightProbe++;
   try{
     trainChordType = chordType;
     trainVariant = trainVariantUISwapped(ring) ? '2' : '1';
@@ -8583,6 +9039,7 @@ function rootSchemeCells(chordType, ring, tonicIndex){
     });
   }catch(e){
   }finally{
+    trainHighlightProbe--;
     highlightedTrainWedges.length = before;
     setWedgeInstant = savedSetWedge;
     trainChordType = savedType;
@@ -8602,9 +9059,11 @@ function chordToneCells(chordType, ring, tonicIndex){
   const tonicPc = (tonic.ring === 'minor' ? minorsSemitone : majorsSemitone)[tonic.idx];
   const scheme = rootSchemeCells(chordType, tonic.ring, tonic.idx);
   const pcOf = c => (c.ring === 'minor' ? minorsSemitone : majorsSemitone)[c.idx];
-  return formula.map(iv=>{
+  const altFifth = altFifthCell(chordType, tonic.ring, tonic.idx);
+  return formula.map((iv, j)=>{
     const degree = chordDegreeKeyOfInterval(iv);
     if(iv === 0) return { ring: tonic.ring, idx: tonic.idx, degree };
+    if(altFifth && j === ALT_FIFTH_NOTE_INDEX) return altFifth;
     const pc = ((tonicPc + iv) % 12 + 12) % 12;
     const fromScheme = scheme.find(c => pcOf(c) === pc && !(c.ring === tonic.ring && c.idx === tonic.idx));
     if(fromScheme) return { ring: fromScheme.ring, idx: fromScheme.idx, degree };
@@ -8953,7 +9412,7 @@ function accCellDist(a, b){
      Am 11:                     Bm -> Dm (а не D)
      Am maj11, m11, m(Maj11):   Bm -> Dm (а не D)
      C maj11:                   Bm -> Dm -> F (а не D -> F♮)
-     C 11:                      D -> F по мажорному кольцу (а не F♮)
+     C 11:                      B♭ (ячейка Bm) -> Dm -> F (а не D -> F)
      C m11, m(Maj11):           Bm -> Dm (а не D)
      13, maj13, m13, m(Maj13) на обоих кольцах: Bm -> Dm (а не D) */
 /* Трезвучия на "чужом" кольце (кнопки "Мажор"/"Минор" в "Обучении") тоже
@@ -8971,7 +9430,7 @@ const ACC_FORCED_CELLS = {
   'mmaj11|minor': { 5: ['minor', 11] },
   'dom11|minor':  { 5: ['minor', 11] },
   'maj11|major':  { 4: ['minor', 11], 5: ['major', 11] },
-  'dom11|major':  { 4: ['major', 2],  5: ['major', 11] },
+  'dom11|major':  { 3: ['minor', 2], 4: ['minor', 11], 5: ['major', 11] },
   'm11|major':    { 3: ['minor', 2], 4: ['minor', 11] },
   'mmaj11|major': { 4: ['minor', 11] },
   'dom13|major':  { 3: ['minor', 2], 4: ['minor', 11] },
@@ -9003,7 +9462,7 @@ function accChordPattern(chordType, ring, noForced){
   // с другой нотой аккорда
   const cands = formula.map((iv, j)=>{
     if(j === 0) return [{ ring: tonic.ring, idx: 0, alter: 0 }];
-    const letter = spellTrainInterval(root, iv)[0];
+    const letter = spellTrainInterval(root, iv, chordLetterStepFor(chordType, iv))[0];
     const list = [];
     allCells.forEach(c=>{
       if(c.ring === tonic.ring && c.idx === 0) return;
@@ -9022,6 +9481,10 @@ function accChordPattern(chordType, ring, noForced){
     }
     return list;
   });
+  // 7b5 / 7#5: квинта — всегда на ячейке квинты со знаком (см. ALT_FIFTH_TYPES)
+  if(ALT_FIFTH_TYPES[chordType]){
+    cands[ALT_FIFTH_NOTE_INDEX] = [{ ring: tonic.ring, idx: 1, alter: ALT_FIFTH_TYPES[chordType] }];
+  }
   // перебор: длинные шаги цепочки штрафуются сильнее (квадрат), немного
   // учитывается расстояние до тоники и число знаков
   const W_TONIC = 0.25, W_ALTER = 0.6;
@@ -9144,13 +9607,12 @@ function buildTriadInversionArrows(chordType, ring, tonicIndex, styleOverride){
   // "с бемолями\диезами": ячейки с изменённой нотой подписываются нотой
   // (до рисования стрелок — чтобы стрелки упирались в новую подпись)
   // аккорда с красным знаком (напр. на ячейке C — "C♯")
-  if(plan.acc){
-    cells.forEach(c=>{
-      if(!c.alter) return;
-      const item = trainWedgeMap[c.ring + '-' + c.idx];
-      if(item) setTrainAccLabel(item, c.letter, c.sign);
-    });
-  }
+  // (у 7b5/7#5 — и в "правильно": квинта на ячейке G с ♭/♯)
+  cells.forEach(c=>{
+    if(!c || !c.alter) return;
+    const item = trainWedgeMap[c.ring + '-' + c.idx];
+    if(item) setTrainAccLabel(item, c.letter, c.sign);
+  });
   const pairs = plan.arrows;
   const arcState = { count: 0 };
   pairs.forEach(pair=>{
@@ -9168,7 +9630,13 @@ function refreshTrainCircleArrows(){
   if(pressedTrainTonicRing === null) return;
   if(appMode !== 'training') return;
   if(trainModeType) return;              // выбран лад — стрелок аккорда нет
-  if(trainDisplayMode !== 'arrows') return;
+  if(trainDisplayMode !== 'arrows'){
+    // "Цветом": ячейки зависят от схемы и обращения так же, как стрелки
+    clearTriadHighlights();
+    clearTrainArrows();
+    highlightTriadForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    return;
+  }
   clearTrainArrows();
   buildTriadArrowsForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
 }
@@ -9547,7 +10015,14 @@ function getStepsForChordTypeL3(type, ring){
   return [0];
 }
 
+// 7b5, 7#5, 7sus4, 6/9 — ноты считаются по формуле (настоящая высота:
+// у C7b5 это Gb, хотя на круге она стоит на ячейке G со знаком)
+const L3_LETTERS_BY_FORMULA_TYPES = new Set(['dom7b5', 'dom7s5', 'dom7sus4', 'six9']);
 function getChordNoteLettersL3(ring, tonicIndex, type){
+  if(L3_LETTERS_BY_FORMULA_TYPES.has(type)){
+    const tonicPc = (ring === 'minor' ? minorsSemitone : majorsSemitone)[tonicIndex];
+    return new Set(trainChordFormula(type, ring).map(iv => noteNames[((tonicPc + iv) % 12 + 12) % 12]));
+  }
   const names = ring === 'minor' ? minors : majors;
   const steps = getStepsForChordTypeL3(type, ring);
   const letters = new Set();
@@ -9572,12 +10047,16 @@ function chordTypeSuffixL3(type){
     case 'maj7': return 'maj7';
     case 'min7': return 'm7';
     case 'mmaj7': return 'm(Maj7)';
+    case 'dom7b5': return '7b5';
+    case 'dom7s5': return '7#5';
+    case 'dom7sus4': return '7sus4';
     case 'add9': return 'add9';
     case 'madd9': return 'm(add9)';
     case 'dom9': return '9';
     case 'maj9': return 'maj9';
     case 'm9': return 'm9';
     case 'mmaj9': return 'm(Maj9)';
+    case 'six9': return '6/9';
     case 'add11': return 'add11';
     case 'madd11': return 'm(add11)';
     case 'dom11': return '11';
@@ -9594,23 +10073,28 @@ function chordTypeSuffixL3(type){
 
 /* =========================================================
    ОБРАЩЕНИЯ АККОРДОВ в Практике 3 ("Аккорды/Лады").
-   Чекбокс "добавить обращения" (#level3InversionsCheckbox) включает
-   ряд из 4 кнопок (основное / первое / второе / третье). Выбранные
-   варианты попадают в общий пул вопросов наравне с типами аккордов:
-   при каждом новом вопросе случайно берётся одно из выбранных
-   обращений, доступных для выпавшего типа аккорда (у трезвучия нет
-   третьего обращения — оно просто не выпадает).
-   Когда чекбокс выключен, кнопки заблокированы, вопросы всегда в
-   основном виде и порядок нажатия нот не проверяется (как раньше).
-   Когда включён — ноты нужно нажимать строго в порядке обращения,
-   иначе нота считается неверной (см. l3ExpectedLetter ниже).
+   "Выбор обращения" — просто подзаголовок (как в "Обучении"), под ним
+   "С бемолями\диезами" (по умолчанию) / "Правильно" и ряд из 4 кнопок
+   (основное / первое / второе / третье). Выбранные варианты попадают в
+   общий пул вопросов наравне с типами аккордов: при каждом новом вопросе
+   случайно берётся одно из выбранных обращений, доступных для выпавшего
+   типа аккорда (у трезвучия нет третьего обращения — оно не выпадает).
+   После загрузки выбрано только "Основное" (выбор обращений на диск не
+   сохраняется — как в "Обучении"); выбор схемы сохраняется.
+   Ноты аккорда ВСЕГДА нужно нажимать строго по порядку (и в основном
+   виде тоже), иначе нота считается неверной (см. l3ExpectedLetter ниже).
+   Ячейки ответа — по выбранной схеме, одинаковые для мыши и для
+   клавиатуры ПК / MIDI (см. l3SchemeCellsFor).
    Обращения работают только с аккордами, к ладам не применяются.
    ========================================================= */
-const L3_USE_INVERSIONS_KEY = 'circleL3UseInversions';
-const L3_INVERSIONS_KEY = 'circleL3Inversions';
-let l3UseInversions = localStorage.getItem(L3_USE_INVERSIONS_KEY) === '1';
-let l3Inversions = new Set(loadInversionSet(L3_INVERSIONS_KEY) || [0]);
-if(l3Inversions.size === 0) l3Inversions = new Set([0]);
+// старые ключи (чекбокс "Добавить обращения" и сохранённый выбор
+// обращений) больше не используются — подчищаем
+try{
+  localStorage.removeItem('circleL3UseInversions');
+  localStorage.removeItem('circleL3Inversions');
+}catch(e){}
+// по умолчанию выбрано только основное
+let l3Inversions = new Set([0]);
 // "правильно"/"удобно" под "Добавить обращения": в каком порядке нажимать
 // ноты обращения — по схеме стрелок "Обучения" (см. chordInversionOrder)
 const L3_INV_STYLE_KEY = 'circleL3InversionStyle';
@@ -9623,9 +10107,7 @@ const L3_INV_STYLE_KEY = 'circleL3InversionStyle';
 // по умолчанию — "с бемолями\диезами" (как в "Обучении")
 let l3InvStyle = localStorage.getItem(L3_INV_STYLE_KEY) === 'correct' ? 'correct' : 'acc';
 
-function saveL3Inversions(){
-  try{ localStorage.setItem(L3_INVERSIONS_KEY, JSON.stringify(Array.from(l3Inversions))); }catch(e){}
-}
+function saveL3Inversions(){ /* выбор обращений не сохраняется */ }
 
 // Сколько вариантов (основное + обращения) есть у данного типа аккорда,
 // но не больше 4 — как и в "Обучении".
@@ -9653,7 +10135,7 @@ function l3ChordOrderLetters(ring, tonicIndex, type, inversion){
 
 // Какое обращение выпадет очередному вопросу (0 — основной вид).
 function pickL3Inversion(type, ring){
-  if(!l3UseInversions || l3NameMode) return 0;
+  if(l3NameMode) return 0;
   const max = l3InversionCountFor(type, ring) - 1;
   const avail = Array.from(l3Inversions).filter(i => i >= 0 && i <= max);
   if(!avail.length) return 0;
@@ -9661,13 +10143,12 @@ function pickL3Inversion(type, ring){
 }
 
 // Нота, которую сейчас ждём по порядку обращения (null — порядок не
-// проверяется: обращения выключены или загадан лад).
+// проверяется: загадан лад или режим "Назови аккорд/лад").
 function l3ExpectedLetter(){
   if(!currentL3 || !currentL3.order) return null;
   return currentL3.order[currentL3.found.size] || null;
 }
 
-const level3InversionsCheckbox = document.getElementById('level3InversionsCheckbox');
 const level3InversionBtnsEl = document.getElementById('level3InversionBtns');
 const level3InvStyleRow = document.getElementById('level3InvStyleRow');
 const level3InvStyleCorrectCheckbox = document.getElementById('level3InvStyleCorrectCheckbox');
@@ -9691,24 +10172,23 @@ function l3MaxInversionCount(){
   return Math.min(max, 4);
 }
 
-// Обращения доступны, только если включён чекбокс И сейчас загадываются
-// аккорды: у ладов порядок нажатия не проверяется, поэтому при выбранном
-// ладе весь блок гаснет и не нажимается.
+// Обращения доступны, только когда загадываются аккорды: у ладов порядок
+// нажатия не проверяется, поэтому при выбранном ладе (и в режиме "Назови
+// аккорд/лад") весь блок гаснет и не нажимается.
 function l3InversionsEnabled(){
   let family = 'chords';
   try{ family = level3Family; }catch(e){ family = 'chords'; }
-  return l3UseInversions && family !== 'modes' && !l3NameMode;
+  return family !== 'modes' && !l3NameMode;
 }
 
-// Строка чекбокса "Добавить обращения" гаснет вместе с кнопками, когда
-// выбран лад (см. l3InversionsEnabled).
+// Строка "Выбор обращения" гаснет вместе с кнопками, когда выбран лад
+// (см. l3InversionsEnabled).
 function updateL3InversionsRowAvailability(){
   let family = 'chords';
   try{ family = level3Family; }catch(e){ family = 'chords'; }
   const modes = (family === 'modes') || l3NameMode;
   const row = document.getElementById('level3InversionsRow');
   if(row) row.classList.toggle('disabled', modes);
-  if(level3InversionsCheckbox) level3InversionsCheckbox.disabled = modes;
 }
 
 function renderL3InversionButtons(){
@@ -9748,7 +10228,7 @@ function renderL3InversionButtons(){
       + (enabled ? '' : ' disabled');
     btn.textContent = t(INVERSION_BTN_I18N[i]);
     btn.addEventListener('click', ()=>{
-      // без чекбокса "добавить обращения" (и при выбранном ладе) выбирать нельзя
+      // при выбранном ладе (и в "Назови аккорд/лад") выбирать нельзя
       if(!l3InversionsEnabled()) return;
       if(l3Inversions.has(i)){
         if(l3Inversions.size === 1) return; // минимум один вариант остаётся
@@ -9765,16 +10245,6 @@ function renderL3InversionButtons(){
   }
 }
 
-if(level3InversionsCheckbox){
-  level3InversionsCheckbox.checked = l3UseInversions;
-  level3InversionsCheckbox.addEventListener('change', ()=>{
-    l3UseInversions = level3InversionsCheckbox.checked;
-    try{ localStorage.setItem(L3_USE_INVERSIONS_KEY, l3UseInversions ? '1' : '0'); }catch(e){}
-    renderL3InversionButtons();
-    currentL3 = null;
-    if(practiceLevel === 3) pickNewChordL3();
-  });
-}
 // "правильно"/"удобно": нажата ровно одна галка; смена варианта сразу
 // загадывает новый вопрос (порядок нажатия нот меняется)
 function setL3InvStyle(style){
@@ -9950,7 +10420,7 @@ function pickNewChordL3(){
     index: chosen.index,
     chordType: chordType,
     inversion: inversionL3,
-    order: (l3UseInversions && !l3NameMode) ? l3ChordOrderLetters(chosen.ring, chosen.index, chordType, inversionL3) : null,
+    order: !l3NameMode ? l3ChordOrderLetters(chosen.ring, chosen.index, chordType, inversionL3) : null,
     // "сырое" имя тоники с кольца (напр. "Am" для минора) — нужно для
     // подсчёта нот клавиатуры-подсказки (см. computeL3PianoNotes),
     // которая через trainChordLettersFor() строит правильное написание
@@ -9960,9 +10430,10 @@ function pickNewChordL3(){
     name: displayRoot + chordTypeSuffixL3(chordType),
     letters: getChordNoteLettersL3(chosen.ring, chosen.index, chordType),
     found: new Set(),
-    // "с бемолями\диезами": ячейки, на которых нажимаются изменённые ноты
-    accAliases: (l3UseInversions && !l3NameMode && l3InvStyle === 'acc')
-      ? getChordAccAliasesL3(chosen.ring, chosen.index, chordType) : null
+    // ячейки со знаком (♯/♭/♮), на которых нажимаются изменённые ноты —
+    // из той же схемы, что и ответ с клавиатуры ПК / MIDI
+    accAliases: l3AltFifthAliases(chosen.ring, chosen.index, chordType,
+      !l3NameMode ? getChordAccAliasesL3(chosen.ring, chosen.index, chordType, inversionL3) : null)
   };
   if(practiceLevel === 3) centerText.textContent = noteDisplay(l3CenterDisplayName());
   updateL3CenterModeLabel();
@@ -9971,6 +10442,7 @@ function pickNewChordL3(){
 
   rootHistoryL3.push(rootOf(chosen.name));
   if(rootHistoryL3.length > 3) rootHistoryL3.shift();
+  playPracticeQuestionSound(3);
 }
 
 /* ===== Практика 3: лады (см. TRAIN_MODES выше, определены до этого места
@@ -10181,6 +10653,7 @@ function pickNewModeL3(){
 
   rootHistoryL3.push(rootLetter);
   if(rootHistoryL3.length > 3) rootHistoryL3.shift();
+  playPracticeQuestionSound(3);
 }
 
 function setLevel3ModeType(modeId){
@@ -10252,21 +10725,34 @@ updateLevel3ModeButtonsActive();
 // поэтому повторяем её здесь — уже с реальным сохранённым семейством
 renderL3InversionButtons();
 
-/* "с бемолями\диезами для больших аккордов": ноты, которые в "Обучении"
+/* Ноты, которые по выбранной схеме ("С бемолями\диезами" / "Правильно")
    стоят на соседней ячейке с красным знаком (напр. C♯ на ячейке C),
    засчитываются ТОЛЬКО кликом по этой ячейке (клик по самой ноте на круге
    — неверный ответ). С клавиатуры справа и MIDI засчитывается настоящая
-   нота (C♯), а на круге подсвечивается ячейка со знаком.
+   нота (C♯), а на круге подсвечивается ячейка со знаком. Ячейки берутся
+   из l3SchemeCellsFor — той же схемы, что и для клавиатуры ПК / MIDI,
+   поэтому мышь и клавиатура всегда совпадают.
    Возвращает Map "кольцо-индекс" -> { letter, pc, text, sign } или null. */
-function getChordAccAliasesL3(ring, index, chordType){
-  const formula = trainChordFormula(chordType, ring);
-  if(!formula || formula.length < 4) return null;
+function getChordAccAliasesL3(ring, index, chordType, inversion){
+  const cells = l3SchemeCellsFor(ring, index, chordType, inversion);
+  if(!cells) return null;
   const map = new Map();
-  accChordCells(chordType, ring, index).forEach(c=>{
-    if(!c.alter) return;
-    map.set(c.ring + '-' + c.idx, { letter: noteNames[c.pc], pc: c.pc, text: c.letter, sign: c.sign });
+  cells.forEach(c=>{
+    const cellPc = (c.ring === 'minor' ? minorsSemitone : majorsSemitone)[c.index];
+    if(c.pc === cellPc || !c.sign) return;
+    map.set(c.ring + '-' + c.index, { letter: noteNames[c.pc], pc: c.pc, text: c.letter, sign: c.sign });
   });
   return map.size ? map : null;
+}
+// 7b5 / 7#5: к ячейкам со знаком добавляется ячейка квинты (G с ♭/♯) —
+// в любом режиме, не только в "с бемолями\\диезами"
+function l3AltFifthAliases(ring, index, chordType, map){
+  if(l3NameMode) return map;
+  const c = altFifthCell(chordType, ring, index);
+  if(!c) return map;
+  const out = map || new Map();
+  out.set(c.ring + '-' + c.idx, { letter: noteNames[c.pc], pc: c.pc, text: c.letter, sign: c.sign });
+  return out;
 }
 // буква изменённой ноты -> её ячейка (или null)
 function l3AccCellForLetter(letter){
@@ -10415,6 +10901,7 @@ function l3NameChordCells(type, ring, tonicIndex){
     op: it.el.getAttribute('fill-opacity'),
     tr: it.el.style.transition
   }));
+  trainHighlightProbe++;
   try{
     trainChordType = type;
     let v = trainVariantUISwapped(ring) ? '2' : '1';
@@ -10432,6 +10919,7 @@ function l3NameChordCells(type, ring, tonicIndex){
       if(!out.includes(k)) out.push(k);
     });
   }finally{
+    trainHighlightProbe--;
     trainChordType = savedType;
     trainVariant = savedVariant;
     highlightedTrainWedges = savedList;
@@ -10452,6 +10940,12 @@ function applyL3NameCircleHighlight(){
     if(item) item.el.setAttribute('fill', item.baseColor);
   });
   l3NameHighlighted = [];
+  // 7b5 / 7#5: красный ♭/♯ на ячейке квинты (иначе на круге не отличить от 7)
+  if(!l3NameAccLayer){
+    l3NameAccLayer = el('g', {id:'l3NameAccLayer', style:'pointer-events:none;'});
+    svg.appendChild(l3NameAccLayer);
+  }
+  while(l3NameAccLayer.firstChild) l3NameAccLayer.removeChild(l3NameAccLayer.firstChild);
   if(!(l3NameMode && appMode === 'practice' && practiceLevel === 3 && currentL3)) return;
   if(l3WedgesCurrentlyHidden) return;
   l3NameCellColors().forEach(([k, color])=>{
@@ -10460,7 +10954,21 @@ function applyL3NameCircleHighlight(){
     item.el.setAttribute('fill', color);
     l3NameHighlighted.push(k);
   });
+  if(!currentL3.modeType){
+    const c = altFifthCell(currentL3.chordType, currentL3.ring, currentL3.index);
+    if(c){
+      const r = c.ring === 'major' ? (R2 + R3) / 2 : (R0 + R2) / 2;
+      const p = polar(CX, CY, r, c.idx * 30);
+      const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
+      const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      ts.setAttribute('class', 'accSign');
+      ts.textContent = c.sign;
+      t.appendChild(ts);
+      l3NameAccLayer.appendChild(t);
+    }
+  }
 }
+var l3NameAccLayer = null;
 
 // Список ответов в порядке кнопок настроек ("Мажор" и "Минор" —
 // отдельные кнопки, см. l3PoolOnRing).
@@ -10504,6 +11012,9 @@ function renderL3NameAnswers(show){
     box.style.display = 'none';
     while(box.firstChild) box.removeChild(box.firstChild);
     l3NameAnswersSig = '';
+    setL3NameMobileShrink(0);
+    const ci = document.getElementById('circleInner');
+    if(ci) ci.style.translate = '';
     return;
   }
   const list = l3NameAnswerList();
@@ -10537,6 +11048,162 @@ function renderL3NameAnswers(show){
    окна — весь блок пропорционально уменьшается. На телефоне — под кругом
    (под клавиатурой, если она есть), по центру. */
 const L3_NAME_ANSWERS_GAP = 14;
+/* ===== "Назови аккорд/лад" на телефоне =====
+   Кнопки ответов раскладываются так, чтобы все были видны и не вылезали за
+   края экрана:
+   - в вертикальном положении — под кругом (под клавиатурой, если она
+     включена), по центру;
+   - в горизонтальном — справа от круга (под кругом там места нет); круг
+     при этом сдвигается влево, чтобы круг и кнопки вместе стояли по центру
+     экрана и кнопкам хватало места (inner.style.translate).
+   Число колонок подбирается под свободное место (от 1 до 6), чтобы кнопки
+   были как можно крупнее. Если даже так кнопки получаются мельче
+   L3_NAME_MOBILE_MIN_SCALE (выбрано много типов), в вертикальном положении
+   круг уменьшается и поднимается ровно на недостающую высоту
+   (l3NameMobileShrink, см. circleFitScale и --mobile-extra-shift в CSS). */
+const L3_NAME_MOBILE_MARGIN = 6;       // px, отступ кнопок от краёв экрана
+const L3_NAME_MOBILE_MIN_SCALE = 0.7;  // меньше этого кнопки уже неудобно нажимать пальцем
+const L3_NAME_MOBILE_MAX_COLS = 6;
+const L3_NAME_MOBILE_MIN_CIRCLE = 0.5; // круг уменьшается максимум вдвое
+var l3NameMobileShrink = 0;            // px, на сколько уменьшен круг
+var __l3NameRelayoutBusy = false;
+
+function setL3NameMobileShrink(px){
+  px = Math.max(0, Math.round(px));
+  if(px === l3NameMobileShrink) return false;
+  l3NameMobileShrink = px;
+  const inner = document.getElementById('circleInner');
+  if(inner) inner.style.setProperty('--mobile-extra-shift', (px / 2) + 'px');
+  if(!__l3NameRelayoutBusy && typeof applyZoom === 'function'){
+    __l3NameRelayoutBusy = true;
+    try{ applyZoom(); }finally{ __l3NameRelayoutBusy = false; }
+  }
+  return true;
+}
+
+// Сколько пикселей в CSS-единице 100vh (на телефонах она может отличаться
+// от window.innerHeight из-за панели адреса браузера) — подъём круга в CSS
+// задан в vh, поэтому и считаем в них же.
+function cssVhPx(){
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:100vh;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(probe);
+  const h = probe.offsetHeight || window.innerHeight;
+  probe.remove();
+  return h / 100;
+}
+
+function l3NameGridPick(n, bw, bh, gap, availW, availH){
+  let best = null;
+  for(let c = 1; c <= Math.min(n, L3_NAME_MOBILE_MAX_COLS); c++){
+    const rows = Math.ceil(n / c);
+    const w = c*bw + (c-1)*gap;
+    const h = rows*bh + (rows-1)*gap;
+    const sc = Math.min(1, availW / w, availH / h);
+    // при равном размере — больше колонок (кнопки встают в ряд, а не столбиком)
+    if(!best || sc >= best.s - 1e-6) best = { c, rows, w, h, s:sc };
+  }
+  return best;
+}
+
+function layoutL3NameAnswersMobile(box, inner){
+  const btns = box.querySelectorAll('.l3NameAnswerBtn');
+  const n = btns.length;
+  if(!n) return;
+  const W = window.innerWidth, H = window.innerHeight;
+  const portrait = H >= W;
+  const cs = getComputedStyle(box);
+  const bw = parseFloat(cs.getPropertyValue('--l3-name-btn-width')) || 132;
+  const gap = parseFloat(cs.rowGap) || 8;
+  // Размеры кнопок без масштаба: сначала сбрасываем transform
+  box.style.transform = 'none';
+  box.style.gridTemplateColumns = 'repeat(1, var(--l3-name-btn-width))';
+  const bh = btns[0].offsetHeight || 36;
+
+  /* Координаты считаем от раскладки, а не от текущего положения на экране:
+     у круга есть анимация подъёма (transition), и в её середине
+     getBoundingClientRect дал бы промежуточные значения. */
+  const wrapEl = inner.parentElement;
+  const wr = wrapEl.getBoundingClientRect();
+  const innerSize = inner.offsetWidth;
+  const lifted = document.body.classList.contains('mobile-piano-on');
+  const innerTop = wr.top + inner.offsetTop - (lifted ? (15*cssVhPx() + l3NameMobileShrink/2) : 0);
+  const innerLeft0 = wr.left + inner.offsetLeft;   // без сдвига влево
+  const zoom = (typeof zoomPractice === 'number' && !isNaN(zoomPractice)) ? zoomPractice : 100;
+  const circleSize = innerSize * zoom / 100;
+  let blockBottom = innerTop + innerSize/2 + circleSize/2;    // низ круга
+  let blockLeft   = innerLeft0 + innerSize/2 - circleSize/2;  // левый край круга
+  let blockRight  = innerLeft0 + innerSize/2 + circleSize/2;  // правый край круга
+  // клавиатура (её положение относительно круга от анимации не зависит)
+  if(l3PianoWrapEl && l3PianoWrapEl.style.display !== 'none' && l3PianoSvgEl){
+    const ir = inner.getBoundingClientRect();
+    const pr = l3PianoSvgEl.getBoundingClientRect();
+    if(pr.height > 0){
+      blockBottom = Math.max(blockBottom, innerTop + (pr.bottom - ir.top));
+      blockLeft   = Math.min(blockLeft, innerLeft0 + (pr.left - ir.left));
+      blockRight  = Math.max(blockRight, innerLeft0 + (pr.right - ir.left));
+    }
+  }
+
+  const M = L3_NAME_MOBILE_MARGIN;
+  const G = L3_NAME_ANSWERS_GAP;
+  let region, shiftX = 0, pick;
+  if(portrait){
+    region = { left:M, right:W - M, top:blockBottom + G, bottom:H - M };
+    pick = l3NameGridPick(n, bw, bh, gap, Math.max(40, region.right - region.left), Math.max(20, region.bottom - region.top));
+  } else {
+    // Горизонтальное положение: кнопкам отдаём всё место справа от круга,
+    // если бы круг стоял у левого края, а потом центрируем "круг + кнопки".
+    const blockW = blockRight - blockLeft;
+    const maxW = Math.max(40, W - 2*M - blockW - G);
+    const maxH = Math.max(20, H - 2*M);
+    pick = l3NameGridPick(n, bw, bh, gap, maxW, maxH);
+    const total = blockW + G + pick.w * pick.s;
+    const startX = Math.max(M, (W - total) / 2);
+    shiftX = Math.round(startX - blockLeft);
+    region = { left:startX + blockW + G, right:W - M, top:M, bottom:H - M };
+  }
+  inner.style.translate = shiftX ? (shiftX + 'px 0') : '';
+  const innerLeft = innerLeft0 + shiftX;
+  const availW = Math.max(40, region.right - region.left);
+  const availH = Math.max(20, region.bottom - region.top);
+
+  // Вертикальное положение: не хватает высоты — уменьшаем круг
+  if(portrait){
+    // самый крупный масштаб, который вообще позволяет ширина экрана
+    const maxByWidth = Math.min(1, availW / bw);
+    const target = Math.min(L3_NAME_MOBILE_MIN_SCALE, maxByWidth);
+    // при целевом масштабе — наибольшее число колонок, влезающее по ширине
+    let c = 1;
+    for(let k = Math.min(n, L3_NAME_MOBILE_MAX_COLS); k >= 1; k--){
+      if((k*bw + (k-1)*gap) * target <= availW){ c = k; break; }
+    }
+    const rows = Math.ceil(n / c);
+    const needH = (rows*bh + (rows-1)*gap) * target;
+    const deficit = needH - availH;               // >0 — не хватает, <0 — лишнее место
+    const fullCircle = innerSize + l3NameMobileShrink;  // размер круга без уменьшения
+    const maxShrink = fullCircle * (1 - L3_NAME_MOBILE_MIN_CIRCLE);
+    let want = l3NameMobileShrink;
+    if(pick.s < target - 0.01 && deficit > 1) want = Math.min(maxShrink, l3NameMobileShrink + deficit);
+    else if(deficit < -1) want = Math.max(0, l3NameMobileShrink + deficit);
+    if(!__l3NameRelayoutBusy && setL3NameMobileShrink(want)) return; // раскладка пересчитана заново
+  } else if(l3NameMobileShrink){
+    if(!__l3NameRelayoutBusy && setL3NameMobileShrink(0)) return;
+  }
+
+  box.style.gridTemplateColumns = 'repeat(' + pick.c + ', var(--l3-name-btn-width))';
+  box.style.right = '';
+  box.style.marginLeft = '0';
+  box.style.marginRight = '';
+  box.style.transformOrigin = 'left top';
+  box.style.transform = 'scale(' + pick.s + ')';
+  const visW = pick.w * pick.s, visH = pick.h * pick.s;
+  const x = portrait ? region.left + (availW - visW) / 2 : region.left;
+  const y = portrait ? region.top : region.top + (availH - visH) / 2;
+  box.style.left = (x - innerLeft) + 'px';
+  box.style.top = (y - innerTop) + 'px';
+}
+
 function layoutL3NameAnswers(){
   const box = document.getElementById('l3NameAnswers');
   const inner = document.getElementById('circleInner');
@@ -10545,20 +11212,12 @@ function layoutL3NameAnswers(){
   let pianoZoom = 1;
   try{ if(typeof pianoZoomPractice === 'number' && !isNaN(pianoZoomPractice)) pianoZoom = pianoZoomPractice / 100; }catch(e){}
   if(document.body.classList.contains('is-mobile')){
-    box.style.gridTemplateColumns = '';
-    box.style.left = '50%';
-    box.style.right = '';
-    box.style.marginLeft = '0';
-    box.style.marginRight = '';
-    box.style.transform = 'translateX(-50%)';
-    let top = inner.offsetHeight + 12;
-    if(l3PianoWrapEl && l3PianoWrapEl.style.display !== 'none'){
-      const r = l3PianoWrapEl.getBoundingClientRect();
-      const ir = inner.getBoundingClientRect();
-      top = r.bottom - ir.top + L3_NAME_ANSWERS_GAP;
-    }
-    box.style.top = top + 'px';
-  } else {
+    layoutL3NameAnswersMobile(box, inner);
+    return;
+  }
+  box.style.transformOrigin = '';
+  inner.style.translate = '';   // сдвиг круга влево бывает только на телефоне
+  {
     const extra = 480 * (zoom/100 - 1) / 2;
     box.style.transform = 'none';
     const gapVal = (32 + Math.max(0, extra)) + 'px';
@@ -10660,10 +11319,11 @@ function onWedgeClickLevel3(e){
   if(currentL3.raiseAliases && currentL3.raiseAliases.has(raiseKey)){
     letter = currentL3.raiseAliases.get(raiseKey);
   }
-  // "с бемолями\диезами": изменённая нота — только на своей ячейке со знаком
-  if(currentL3.accAliases){
-    if(currentL3.accAliases.has(raiseKey)) letter = currentL3.accAliases.get(raiseKey).letter;
-    else if(l3AccCellForLetter(letter)) letter = '';
+  // изменённая нота (ячейка со знаком ♯/♭/♮ по схеме) засчитывается в
+  // двух местах: на ячейке со знаком (напр. E♭ на ячейке Em в Cm) и на
+  // своей собственной ячейке (E♭)
+  if(currentL3.accAliases && currentL3.accAliases.has(raiseKey)){
+    letter = currentL3.accAliases.get(raiseKey).letter;
   }
 
   // Для лада: тоника — зелёным, остальные верные ноты — цветом терции
@@ -10690,9 +11350,19 @@ function renderLevel3Hint(){
   while(level3HintLayer.firstChild) level3HintLayer.removeChild(level3HintLayer.firstChild);
   if(!level3HintVisible || !currentL3 || practiceLevel !== 3 || l3NameMode) return;
 
+  // Ячейки, клик по которым засчитывается как ДРУГАЯ нота (ячейка со
+  // знаком ♯/♭/♮ и ячейка-заменитель гарм./мелод. минора): обычную
+  // подпись на них не ставим — у них своя подпись ниже.
+  const aliasCellKeys = new Set();
+  if(currentL3.accAliases) currentL3.accAliases.forEach((a, k)=> aliasCellKeys.add(k));
+  if(currentL3.raiseAliases) currentL3.raiseAliases.forEach((L, k)=> aliasCellKeys.add(k));
+
   currentL3.letters.forEach(letter=>{
     if(currentL3.found.has(letter)) return;
-    // "с бемолями\диезами": подсказка только на ячейке со знаком
+    // "с бемолями\диезами" (и b5/#5): подпись со знаком на ячейке со
+    // знаком, И обычная подпись на своей собственной ячейке ноты (напр.
+    // в Cm — "E" с красным ♭ на ячейке Em и "E♭" на ячейке E♭), т.к.
+    // засчитывается клик по любой из них.
     const accCell = l3AccCellForLetter(letter);
     if(accCell){
       const r = accCell.ring === 'major' ? LEVEL3_HINT_RADIUS_MAJOR : LEVEL3_HINT_RADIUS_MINOR;
@@ -10704,10 +11374,35 @@ function renderLevel3Hint(){
       ts.textContent = accCell.alias.sign;
       t.appendChild(ts);
       level3HintLayer.appendChild(t);
-      return;
     }
-    const majorIdx = majors.findIndex(n => rootOf(n) === letter);
-    const minorIdx = minors.findIndex(n => rootOf(n) === letter);
+    // Гарм./мелод. минор: на ячейке-заменителе (напр. B♭ в C гарм.
+    // миноре) — повышенная нота лада ("B") красным, как на круге "Обучения"
+    if(currentL3.raiseAliases && currentL3.modeType){
+      const cfg = trainModeCfg(currentL3.modeType);
+      currentL3.raiseAliases.forEach((L, k)=>{
+        if(L !== letter) return;
+        const dash = k.lastIndexOf('-');
+        const ring = k.slice(0, dash);
+        const idx = parseInt(k.slice(dash + 1));
+        let text = letter;
+        try{
+          const off = ((idx - currentL3.index) % 12 + 12) % 12;
+          const rr = cfg && cfg.raise ? cfg.raise.find(x => ((x.cellOffset % 12) + 12) % 12 === off) : null;
+          const tonicRaw = currentL3.ring === 'minor' ? rootOf(currentL3.tonicNoteRaw) : currentL3.tonicNoteRaw;
+          if(rr) text = spellTrainIntervalStrict(tonicRaw, rr.semitone).text || letter;
+        }catch(e){ text = letter; }
+        const r = ring === 'major' ? LEVEL3_HINT_RADIUS_MAJOR : LEVEL3_HINT_RADIUS_MINOR;
+        const p = polar(CX, CY, r, idx * 30);
+        const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
+        t.textContent = noteDisplay(text);
+        t.style.fill = TRAIN_REAL_MODE_NOTE_COLOR;
+        level3HintLayer.appendChild(t);
+      });
+    }
+    let majorIdx = majors.findIndex(n => rootOf(n) === letter);
+    let minorIdx = minors.findIndex(n => rootOf(n) === letter);
+    if(aliasCellKeys.has('major-' + majorIdx)) majorIdx = -1;
+    if(aliasCellKeys.has('minor-' + minorIdx)) minorIdx = -1;
     if(majorIdx !== -1){
       const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MAJOR, majorIdx * 30);
       const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
@@ -10815,6 +11510,7 @@ function pickNewChordL2(){
 
   rootHistoryL2.push(rootOf(currentL2.name));
   if(rootHistoryL2.length > 3) rootHistoryL2.shift();
+  playPracticeQuestionSound(2);
 }
 
 function onWedgeClickLevel2New(e){
@@ -10972,7 +11668,9 @@ const EXT_DEGREE_HIGHLIGHT_COLOR = {
   seventh: resolveColor(7),    /* purple */
   ninth: resolveColor(5),      /* cyan */
   eleventh: resolveColor(6),   /* orange */
-  thirteenth: resolveColor(8)  /* lime */
+  thirteenth: resolveColor(8), /* lime */
+  fourth: resolveColor(3),     /* yellow */
+  sixth: resolveColor(8)       /* lime */
 };
 Object.keys(EXT_CHORD_DEGREES).forEach(chordKey=>{
   const degrees = EXT_CHORD_DEGREES[chordKey];
@@ -11053,7 +11751,7 @@ const CHORD_LEGEND_DEGREES = {
 };
 // генерируются автоматически для расширенных аккордов (9/11/13 и
 // разновидности) из тех же данных, что и highlights/arrows выше
-const EXT_DEGREE_NUMBER = { fifth:5, third:3, seventh:7, ninth:9, eleventh:11, thirteenth:13 };
+const EXT_DEGREE_NUMBER = { fifth:5, third:3, seventh:7, ninth:9, eleventh:11, thirteenth:13, fourth:4, sixth:6 };
 Object.keys(EXT_CHORD_DEGREES).forEach(chordKey=>{
   const degrees = EXT_CHORD_DEGREES[chordKey];
   const list = [{ degree: 1, color: resolveColor(1) }];
@@ -11062,6 +11760,16 @@ Object.keys(EXT_CHORD_DEGREES).forEach(chordKey=>{
   });
   CHORD_LEGEND_DEGREES[chordKey] = list;
 });
+// 6/9 с тоникой на мажорном кольце ("Цветом"): C -> G, Em, A, D
+const SIX9_HIGHLIGHTS_MAJOR = {
+  fifth: { degreeSteps: 1, ring:'major', color: resolveColor(4) /* blue */ },
+  third: { degreeSteps: 1, ring:'minor', color: resolveColor(3) /* yellow */ },
+  sixth: { degreeSteps: 3, ring:'major', color: resolveColor(8) /* lime */ },
+  ninth: { degreeSteps: 2, ring:'major', color: resolveColor(5) /* cyan */ }
+};
+// 7b5 / 7#5: квинта в легенде — пониженная / повышенная
+CHORD_LEGEND_DEGREES.dom7b5.forEach(d=>{ if(d.degree === 5) d.label = 'b5'; });
+CHORD_LEGEND_DEGREES.dom7s5.forEach(d=>{ if(d.degree === 5) d.label = '#5'; });
 const trainLegendEl = document.getElementById('trainLegend');
 
 /* Галка "Показать ступени аккорда" — включает/выключает легенду цветов
@@ -11105,7 +11813,7 @@ function renderTrainLegend(){
     swatch.style.background = d.color;
     const text = document.createElement('span');
     text.className = 'legendText';
-    text.textContent = typeof degreeLegendText === 'function' ? degreeLegendText(d.degree) : `${DEGREE_LABEL_RU[d.degree]} — ${d.degree}я ступень`;
+    text.textContent = typeof degreeLegendText === 'function' ? degreeLegendText(d.label || d.degree) : `${DEGREE_LABEL_RU[d.degree]} — ${d.degree}я ступень`;
     row.appendChild(swatch);
     row.appendChild(text);
     trainLegendEl.appendChild(row);
@@ -11154,6 +11862,55 @@ function clearTriadHighlights(){
   unraiseTrainWedges();
 }
 
+/* ===== "Цветом" = те же ячейки, что и "Стрелками" =====
+   В "Обучении" (кнопка "Цветом") красятся ровно те ячейки, на которые
+   указывают стрелки выбранной схемы ("С бемолями\\диезами" / "Правильно")
+   и выбранного обращения, с теми же красными знаками (♯/♭/♮) на ячейках.
+   Цвет ячейки — цвет стрелки, которая указывает на эту ноту (по ступени,
+   см. INV_DEGREE_STYLE), с той же прозрачностью 50%, что и раньше.
+   Возвращает ячейки нот аккорда (в порядке формулы) или null — тогда
+   рисуется прежняя подсветка. Вызывать с уже подставленным эффективным
+   типом аккорда (см. withTrainEffChordType). */
+function trainArrowSchemeCells(ring, tonicIndex){
+  if(trainModeType || !trainInvSchemeOn()) return null;
+  if(trainVariant !== (trainVariantUISwapped(ring) ? '2' : '1')) return null;
+  const formula = trainChordFormula(trainChordType, ring);
+  if(!formula) return null;
+  const n = formula.length;
+  const inv = Math.max(0, Math.min(trainInversion || 0, Math.min(n, 4) - 1));
+  const plan = inversionPlan(trainChordType, ring, n, inv, trainInvArrowStyle);
+  if(!plan) return null;
+  return inversionPlanCells(plan, trainChordType, ring, tonicIndex);
+}
+function highlightTrainCellsLikeArrows(ring, tonicIndex){
+  const cells = trainArrowSchemeCells(ring, tonicIndex);
+  if(!cells) return false;
+  cells.forEach(c=>{
+    if(!c || (c.ring === ring && c.idx === tonicIndex)) return;
+    const item = trainWedgeMap[c.ring + '-' + c.idx];
+    if(!item) return;
+    const style = INV_DEGREE_STYLE[c.degree] || INV_DEGREE_STYLE.fifth;
+    setWedgeInstant(item, solidArrowColor(style.color), 0.5);
+    highlightedTrainWedges.push(item);
+    if(c.alter) setTrainAccLabel(item, c.letter, c.sign);
+  });
+  return true;
+}
+// только красные знаки на ячейках (после поворота круга подписи
+// пересобираются, а покраска ячеек остаётся)
+function applyTrainCellsAccLabels(ring, tonicIndex){
+  return withTrainEffChordType(ring, ()=>{
+    const cells = trainArrowSchemeCells(ring, tonicIndex);
+    if(!cells) return false;
+    cells.forEach(c=>{
+      if(!c || !c.alter) return;
+      const item = trainWedgeMap[c.ring + '-' + c.idx];
+      if(item) setTrainAccLabel(item, c.letter, c.sign);
+    });
+    return true;
+  });
+}
+
 // красит ячейки квинты и терции для заданной тоники (мажор или минор), 50% прозрачности.
 // Учитывает текущий trainVariant ('1' числовой / '2' буквенный) — см. TRIAD_V1_HIGHLIGHTS/TRIAD_V2_HIGHLIGHTS.
 function highlightTriadForTonic(ring, tonicIndex){
@@ -11161,6 +11918,10 @@ function highlightTriadForTonic(ring, tonicIndex){
     withTrainEffChordType(ring, ()=> highlightTriadForTonic(ring, tonicIndex));
     return;
   }
+  // "Цветом" в "Обучении" — те же ячейки, что и "Стрелками" (см. выше).
+  // При подсчёте ячеек (trainHighlightProbe) — прежняя схема: на ней
+  // держатся стрелки "Правильно" и режим "Назови аккорд/лад".
+  if(!trainHighlightProbe && highlightTrainCellsLikeArrows(ring, tonicIndex)) return;
   if(SUS_CONFIGS[trainChordType]){
     highlightSusForTonic(trainChordType, ring, tonicIndex);
     return;
@@ -11360,6 +12121,11 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
     const useHighlights2 = trainVariant === '2' && highlights2Cfg;
     highlightsCfg = useHighlights2 ? highlights2Cfg : susCfg.highlights;
   }
+  // 7b5 / 7#5 на мажорном кольце — те же ячейки, что у 7 (C -> G -> Em ->
+  // B♭), квинта — ячейка G (со знаком ♭/♯, см. applyTrainAltFifthLabel);
+  // 6/9 — терция на Em, как у add9 (C, G, Em, A, D)
+  if(ring !== 'minor' && ALT_FIFTH_TYPES[chordType]) highlightsCfg = SUS_CONFIGS.dom7.highlights2;
+  if(ring !== 'minor' && chordType === 'six9') highlightsCfg = SIX9_HIGHLIGHTS_MAJOR;
   if(!highlightsCfg) return; // нет Варианта 2 для этого аккорда (напр. madd9)
 
   const angleIndex = ring === 'minor' ? tonicIndex : tonicFifthsIndex(ring, tonicIndex);
@@ -11376,6 +12142,7 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
       highlightedTrainWedges.push(item);
     }
   });
+  if(!trainHighlightProbe) applyTrainAltFifthLabel(chordType, ring, tonicIndex);
 }
 
 // красит ячейки Варианта 2 (буквенного) для расширенных аккордов
@@ -11618,8 +12385,8 @@ const TRAIN_CHORD_TYPE_KEY = 'trainChordType';
 let trainChordType = localStorage.getItem(TRAIN_CHORD_TYPE_KEY);
 const VALID_TRAIN_CHORD_TYPES = new Set([
   'triadMaj','triadMin',
-  'sus2','sus4','dom7','maj7','min7','mmaj7','add9','madd9',
-  'dom9','maj9','m9','mmaj9','add11','madd11','dom11','maj11','m11','mmaj11','dom13','maj13','m13','mmaj13'
+  'sus2','sus4','dom7','maj7','min7','mmaj7','dom7b5','dom7s5','dom7sus4','add9','madd9',
+  'dom9','maj9','m9','mmaj9','six9','add11','madd11','dom11','maj11','m11','mmaj11','dom13','maj13','m13','mmaj13'
 ]);
 if(!VALID_TRAIN_CHORD_TYPES.has(trainChordType)) trainChordType = 'triadMaj';
 function saveTrainChordType(){
@@ -11928,6 +12695,13 @@ const trainMaj13Btn = document.getElementById('trainMaj13Btn');
 const trainM13Btn = document.getElementById('trainM13Btn');
 const trainMMaj13Btn = document.getElementById('trainMMaj13Btn');
 const trainMMaj11Btn = document.getElementById('trainMMaj11Btn');
+// 7b5, 7#5, 7sus4, 6/9
+const NEW_TRAIN_CHORD_BTNS = [
+  ['dom7b5',   document.getElementById('trainDom7b5Btn')],
+  ['dom7s5',   document.getElementById('trainDom7s5Btn')],
+  ['dom7sus4', document.getElementById('trainDom7Sus4Btn')],
+  ['six9',     document.getElementById('trainSix9Btn')]
+];
 
 function applyTrainChordType(){
   trainMajorBtn.classList.toggle('active', trainChordType === 'triadMaj');
@@ -11954,6 +12728,9 @@ function applyTrainChordType(){
   trainM13Btn.classList.toggle('active', trainChordType === 'm13');
   trainMMaj13Btn.classList.toggle('active', trainChordType === 'mmaj13');
   trainMMaj11Btn.classList.toggle('active', trainChordType === 'mmaj11');
+  NEW_TRAIN_CHORD_BTNS.forEach(([type, btn])=>{
+    if(btn) btn.classList.toggle('active', trainChordType === type);
+  });
 
   // Аккорд и лад взаимоисключающи (см. setTrainModeType) — пока активен
   // лад, ни одна из кнопок аккордов не должна выглядеть выбранной.
@@ -12042,6 +12819,9 @@ trainMaj13Btn.addEventListener('click', ()=> setTrainChordType('maj13'));
 trainM13Btn.addEventListener('click', ()=> setTrainChordType('m13'));
 trainMMaj13Btn.addEventListener('click', ()=> setTrainChordType('mmaj13'));
 trainMMaj11Btn.addEventListener('click', ()=> setTrainChordType('mmaj11'));
+NEW_TRAIN_CHORD_BTNS.forEach(([type, btn])=>{
+  if(btn) btn.addEventListener('click', ()=> setTrainChordType(type));
+});
 
 /* =========================================================
    Лады (см. TRAIN_MODES / trainModeType выше) — 7 кнопок под кнопками
@@ -12324,9 +13104,11 @@ if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();
   const cb = document.getElementById('trainRealModeNotesCheckbox');
   if(!cb) return;
   cb.checked = trainRealModeNotesOn;
+  applyTrainAltNoteLock();
   cb.addEventListener('change', ()=>{
     trainRealModeNotesOn = cb.checked;
     try{ localStorage.setItem(TRAIN_REAL_MODE_NOTES_KEY, trainRealModeNotesOn ? '1' : '0'); }catch(e){}
+    applyTrainAltNoteLock();
     if(trainModeType && pressedTrainTonicRing !== null){
       clearTriadHighlights();
       highlightModeForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
@@ -12343,7 +13125,11 @@ const MODE_KEY = 'circleAppMode';
 // чтобы новый пользователь сразу их увидел. Дальше — как обычно,
 // раскладка запоминается в localStorage.
 const FIRST_LAUNCH_DONE_KEY = 'circleFirstLaunchDone';
+// true только при самом первом запуске приложения — тогда в самом конце
+// скрипта в "Обучении" нажимается C на мажорном кольце (C мажор).
+var circleIsFirstLaunch = false;
 if(localStorage.getItem(FIRST_LAUNCH_DONE_KEY) !== '1'){
+  circleIsFirstLaunch = true;
   localStorage.setItem(FIRST_LAUNCH_DONE_KEY, '1');
   localStorage.setItem(MODE_KEY, 'training');
   localStorage.setItem('sidePanelOpen', '1');
@@ -12666,25 +13452,27 @@ topTabTrainingBtn.addEventListener('click', ()=>{
   applyTopTabs();
 });
 
+/* Переключение способа ответа не должно прокручивать панель настроек
+   наверх: запоминаем прокрутку до переключения и возвращаем её после
+   (сразу и ещё раз на следующем кадре, когда раскладка уже обновилась). */
+function switchNotesInputLevel(level){
+  const keepScroll = sidePanel ? sidePanel.scrollTop : 0;
+  appMode = 'practice';
+  practiceLevel = level;
+  setNotesInputLevel(level);
+  applyMode();
+  applyPracticeLevel();
+  applyTopTabs();
+  if(sidePanel){
+    sidePanel.scrollTop = keepScroll;
+    requestAnimationFrame(()=>{ sidePanel.scrollTop = keepScroll; });
+  }
+}
 if(notesInputMouseBtn){
-  notesInputMouseBtn.addEventListener('click', ()=>{
-    appMode = 'practice';
-    practiceLevel = 1;
-    setNotesInputLevel(1);
-    applyMode();
-    applyPracticeLevel();
-    applyTopTabs();
-  });
+  notesInputMouseBtn.addEventListener('click', ()=>switchNotesInputLevel(1));
 }
 if(notesInputMidiBtn){
-  notesInputMidiBtn.addEventListener('click', ()=>{
-    appMode = 'practice';
-    practiceLevel = 2;
-    setNotesInputLevel(2);
-    applyMode();
-    applyPracticeLevel();
-    applyTopTabs();
-  });
+  notesInputMidiBtn.addEventListener('click', ()=>switchNotesInputLevel(2));
 }
 
 applyMode();
@@ -12723,26 +13511,6 @@ function isMobileLayout(){
 let isMobile = isMobileLayout();
 document.body.classList.toggle('is-mobile', isMobile);
 
-/* ===== Масштаб панели настроек на мобильной раскладке =====
-   Базовая ширина панели (MOBILE_PANEL_BASE_WIDTH) должна совпадать с
-   шириной #sidePanel в CSS (width:520px), это та же ширина, что и на
-   десктопе. Вместо того чтобы растягивать саму вёрстку под экран
-   (из-за чего кнопки становились непропорционально широкими), панель
-   масштабируется целиком через CSS-переменную --mp-scale и
-   transform:scale() — визуально это выглядит как зум, но раскладка
-   (соотношение ширины кнопок и отступов) внутри остаётся точно такой
-   же, как на десктопе. */
-const MOBILE_PANEL_BASE_WIDTH = 520;   // px — должно совпадать с шириной #sidePanel в CSS
-const MOBILE_PANEL_SIDE_MARGIN = 0.94; // небольшой отступ по краям экрана (как max-width:92vw на десктопе)
-const MOBILE_PANEL_MAX_SCALE = 2.5;    // защита от чрезмерного увеличения на широких планшетах (pointer:coarse)
-
-function updateMobilePanelScale(){
-  if(!isMobile || !sidePanel) return;
-  const available = window.innerWidth * MOBILE_PANEL_SIDE_MARGIN;
-  const scale = Math.min(available / MOBILE_PANEL_BASE_WIDTH, MOBILE_PANEL_MAX_SCALE);
-  sidePanel.style.setProperty('--mp-scale', scale);
-}
-updateMobilePanelScale();
 
 /* Логическое состояние "открыта/закрыта" хранится ОТДЕЛЬНО от
    sidePanel.style.display. На мобильной раскладке display у панели
@@ -12930,6 +13698,24 @@ function updateSidePanelPinRowPosition(){
   }
   updateCrosshairRowPosition(tab);
   updateThemeRowPosition(tab);
+  updateHotkeysRowPosition(tab);
+}
+
+/* "Все горячие клавиши" + (i): на вкладке "Ноты" — сразу под строкой
+   "Пары" (с подпунктом "Скрыть круг"), т.е. над выбором темы. На
+   остальных вкладках — как раньше, последней строкой внутри
+   "Отображать настройки:". */
+function updateHotkeysRowPosition(tab){
+  const row = document.getElementById('hotkeysInfoRow');
+  if(!row || !sidePanelPinRowEl) return;
+  const pairsRow = document.getElementById('notesPairsRow');
+  if(tab === 'p1' && pairsRow && pairsRow.parentElement){
+    if(pairsRow.nextElementSibling !== row){
+      pairsRow.parentElement.insertBefore(row, pairsRow.nextElementSibling);
+    }
+  } else if(row.parentElement !== sidePanelPinRowEl || sidePanelPinRowEl.lastElementChild !== row){
+    sidePanelPinRowEl.appendChild(row);
+  }
 }
 
 /* Строка-чекбокс "Чёрточки" — ставится сразу ПОД строкой "Отображать
@@ -13017,6 +13803,8 @@ function updateThemeRowPosition(tab){
    updateSidePanelPinRowPosition() и, как и она, ДО замера высот в
    syncTrainingPanelHeight(). ===== */
 const notesMidiPanelEl = document.getElementById('notesMidiPanel');
+// "Отвечать с помощью" + 2 кнопки — всегда сразу над MIDI
+const notesInputBlockEl = document.getElementById('notesInputBlock');
 function updateNotesMidiPanelPosition(){
   if(!notesMidiPanelEl) return;
   const tab = currentTopTab();
@@ -13025,6 +13813,9 @@ function updateNotesMidiPanelPosition(){
   if(!target) return;
   if(notesMidiPanelEl.parentElement !== target || target.lastElementChild !== notesMidiPanelEl){
     target.appendChild(notesMidiPanelEl);
+  }
+  if(notesInputBlockEl && notesMidiPanelEl.previousElementSibling !== notesInputBlockEl){
+    target.insertBefore(notesInputBlockEl, notesMidiPanelEl);
   }
 }
 
@@ -13160,11 +13951,6 @@ window.addEventListener('resize', ()=>{
     if(__sidePanelPinReady) updateSidePanelLayout();
     setSidePanelOpen(isSidePanelOpen());
   }
-  // Пересчитываем масштаб панели и при смене desktop/mobile, и просто
-  // при изменении ширины экрана в пределах мобильной раскладки (например,
-  // при повороте телефона) — иначе панель останется "зазумленной" под
-  // старую ширину экрана.
-  updateMobilePanelScale();
   // Пересчитываем «вписывание» круга в экран (поворот телефона, смена
   // desktop/mobile) — см. circleFitScale()/applyZoom().
   if(typeof applyZoom === 'function') applyZoom();
@@ -13183,10 +13969,6 @@ window.addEventListener('resize', ()=>{
 // и мобильной версии — "тап вне настроек").
 sidePanelBackdrop.addEventListener('click', () => {
   setSidePanelOpen(false);
-  // Сбрасываем счётчик двойного тапа: иначе два быстрых тапа по
-  // затемнению закрыли бы панель первым тапом и тут же снова открыли
-  // вторым (сработал бы жест "двойной тап" ниже).
-  dtapLastTime = 0;
 });
 
 /* ===== ДЕСКТОП: средняя кнопка мыши (колесо как кнопка) открывает и
@@ -13205,57 +13987,6 @@ document.addEventListener('mousedown', (e) => {
 document.addEventListener('auxclick', (e) => {
   if (e.button === 1) e.preventDefault();
 });
-
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ: панель настроек открывается ДВОЙНЫМ ТАПОМ
-   (два быстрых касания ОДНИМ пальцем подряд) по свободному месту
-   экрана. Свайп вверх настройки больше НЕ открывает — раньше панель
-   выскакивала при любой прокрутке пальцем вверх.
-   Закрытие осталось прежним: тап по затемнению вне панели или тап
-   двумя пальцами. Работает только в мобильной раскладке. ===== */
-const DOUBLE_TAP_MAX_DELAY = 350; // ms, максимальная пауза между двумя касаниями
-const DOUBLE_TAP_MAX_DIST  = 40;  // px, максимальное расстояние между точками касаний
-const DOUBLE_TAP_MAX_HOLD  = 300; // ms, дольше — это удержание/перетаскивание, а не тап
-let dtapLastTime = 0, dtapLastX = 0, dtapLastY = 0;
-let dtapStart = null;
-
-/* По кнопкам, полям, ячейкам круга и клавишам мини-клавиатуры двойной
-   тап НЕ считается жестом открытия настроек — иначе панель выскакивала
-   бы при быстрых ответах (две ноты подряд, повторный тап по той же
-   ячейке и т.п.). Жест работает по «пустым» местам экрана: фон
-   страницы, поля вокруг круга, свободное место внутри его квадрата. */
-function isInteractiveTapTarget(el){
-  if(!el) return false;
-  if(typeof el.closest !== 'function') return true; // не Element (например, document) — не рискуем
-  return !!el.closest('#sidePanel, button, input, select, textarea, label, a, path, rect, circle, ellipse, polygon, polyline, line, text, [role="button"]');
-}
-
-document.addEventListener('touchstart', (e) => {
-  if(!isMobile){ dtapStart = null; return; }
-  if(e.touches.length !== 1){ dtapStart = null; dtapLastTime = 0; return; } // мультитач — это другой жест
-  const t = e.touches[0];
-  dtapStart = { x:t.clientX, y:t.clientY, time:Date.now(), target:e.target };
-}, { passive: true });
-
-document.addEventListener('touchend', (e) => {
-  if(!isMobile || !dtapStart) return;
-  const start = dtapStart;
-  dtapStart = null;
-  if(e.touches.length > 0){ dtapLastTime = 0; return; } // на экране остался ещё палец
-  const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
-  if(!t) return;
-  const now = Date.now();
-  // отсеиваем всё, что не является коротким тапом на месте
-  if(now - start.time > DOUBLE_TAP_MAX_HOLD) { dtapLastTime = 0; return; }
-  if(Math.hypot(t.clientX - start.x, t.clientY - start.y) > DOUBLE_TAP_MAX_DIST) { dtapLastTime = 0; return; }
-  if(isInteractiveTapTarget(start.target)) { dtapLastTime = 0; return; }
-  if(now - dtapLastTime <= DOUBLE_TAP_MAX_DELAY &&
-     Math.hypot(t.clientX - dtapLastX, t.clientY - dtapLastY) <= DOUBLE_TAP_MAX_DIST){
-    dtapLastTime = 0; // жест засчитан, следующий тап начинает новый отсчёт
-    if(!isSidePanelOpen()) setSidePanelOpen(true);
-  } else {
-    dtapLastTime = now; dtapLastX = t.clientX; dtapLastY = t.clientY;
-  }
-}, { passive: true });
 
 /* =========================================================
    Мультитач-тапы: 3 пальца — увеличить круг, 4 пальца — уменьшить
@@ -13434,6 +14165,7 @@ if(window.visualViewport){
    альбомной ориентации. MOBILE_CIRCLE_MARGIN — отступ от краёв экрана. */
 const MOBILE_CIRCLE_MARGIN = 6; // px с каждой стороны
 const MOBILE_CIRCLE_H_WITH_PIANO = 0.58; // доля высоты экрана под круг, когда снизу стоит клавиатура
+const MOBILE_CIRCLE_H_WITH_PIANO_LANDSCAPE_TRAIN = 0.5; // то же, "Обучение" в горизонтальном положении (см. MOBILE_PIANO_MAX_H_VH_LANDSCAPE_TRAIN)
 function circleFitScale(){
   if(!isMobile) return 1;
   /* Когда включена клавиатура под кругом (класс mobile-piano-on), круг
@@ -13443,11 +14175,22 @@ function circleFitScale(){
      MOBILE_CIRCLE_H_WITH_PIANO — доля высоты экрана, которую занимает
      круг в этом режиме (правьте здесь, если хочется круг крупнее/мельче). */
   const availW = window.innerWidth - MOBILE_CIRCLE_MARGIN*2;
+  let circleFrac = MOBILE_CIRCLE_H_WITH_PIANO;
+  try{
+    if(appMode === 'training' && window.innerWidth > window.innerHeight) circleFrac = MOBILE_CIRCLE_H_WITH_PIANO_LANDSCAPE_TRAIN;
+  }catch(e){}
   const heightLimit = document.body.classList.contains('mobile-piano-on')
-    ? window.innerHeight * MOBILE_CIRCLE_H_WITH_PIANO
+    ? window.innerHeight * circleFrac
     : window.innerHeight;
   const availH = heightLimit - MOBILE_CIRCLE_MARGIN*2;
-  const avail = Math.min(availW, availH);
+  let avail = Math.min(availW, availH);
+  // "Назови аккорд/лад" на телефоне: круг уменьшается ровно настолько,
+  // насколько не хватает места кнопкам ответов (см. layoutL3NameAnswersMobile)
+  try{
+    if(appMode === 'practice' && practiceLevel === 3 && l3NameMobileShrink > 0){
+      avail -= l3NameMobileShrink;
+    }
+  }catch(e){}
   return Math.max(0.2, Math.min(1, avail / 480));
 }
 function updateCircleFitBox(){
@@ -13722,6 +14465,22 @@ function handleNoteHotkey(e){
     }
   }
 
+  // "Аккорды/Лады", лады: ответ всегда на мажорном кольце, без цикла
+  // мажор/минор (повторное нажатие той же клавиши — снова мажорное кольцо).
+  if(appMode === 'practice' && practiceLevel === 3 && !l3NameMode && currentL3
+     && currentL3.modeType){
+    let pc;
+    if(flatModePending) pc = HOTKEY_FLAT_PC[e.code];
+    else if(e.shiftKey) pc = HOTKEY_SHARP_PC[e.code];
+    else if(HOTKEY_LETTER[e.code]) pc = majorsSemitone[majors.indexOf(HOTKEY_LETTER[e.code])];
+    if(pc === undefined) return false;
+    if(flatModePending) setFlatModePending(false);
+    const idx = majorsSemitone.indexOf(pc);
+    if(idx === -1) return false;
+    clickWedgeByRing('major', idx);
+    return true;
+  }
+
   if(flatModePending){
     const letter = HOTKEY_LETTER[e.code];
     // Клавиша не является буквой ноты — просто ждём дальше, режим не сбрасываем
@@ -13986,46 +14745,56 @@ function l3MinorSchemePositions(ring, tonicIndex, type){
   });
 }
 
-/* Ответ с клавиатуры ПК / MIDI во вкладке "Аккорды/Лады" (аккорды):
-   аккорд всегда строится от тоники на МАЖОРНОМ кольце (C минор — от C,
-   а не от Cm), ячейки — по выбранной схеме, как в "Обучении":
-     - обращения включены — "с бемолями\диезами" или "правильно";
-     - обращения выключены — схема "Обучения" без галок (аккорды из 4+
-       нот — "с бемолями\диезами" без ручных правок).
-   Возвращает [{ ring, index, pc }] (pc — настоящая высота ноты; у ячейки
-   со знаком она отличается от ноты самой ячейки) или null. */
-function l3KeyboardSchemeCells(){
-  if(!currentL3 || !currentL3.chordType || currentL3.modeType) return null;
-  const tonicPc = (currentL3.ring === 'minor' ? minorsSemitone : majorsSemitone)[currentL3.index];
-  const idx = majorsSemitone.indexOf(tonicPc);
+/* Схема ответа во вкладке "Аккорды/Лады" (аккорды) — ОДНА для мыши и
+   для клавиатуры ПК / MIDI: аккорд всегда строится от тоники на
+   МАЖОРНОМ кольце (C минор — от C, а не от Cm), ячейки — по выбранной
+   схеме ("С бемолями\диезами" или "Правильно") и обращению, как в
+   "Обучении".
+   Возвращает [{ ring, index, pc, letter, sign }] (pc — настоящая высота
+   ноты; у ячейки со знаком она отличается от ноты самой ячейки) или null. */
+/* schemeRing — на каком кольце стоит тоника, от которой строится схема:
+   'major' (по умолчанию, C) или 'minor' (Cm — выбрано колесом Pitch Bend
+   на MIDI-клавиатуре). Ноты аккорда те же, меняется только схема — ровно
+   как в "Обучении" при нажатии тоники на этом кольце. */
+function l3SchemeCellsFor(ring, tonicIndex, chordType, inversion, schemeRing){
+  if(!chordType) return null;
+  const sRing = schemeRing === 'minor' ? 'minor' : 'major';
+  const tonicPc = (ring === 'minor' ? minorsSemitone : majorsSemitone)[tonicIndex];
+  const idx = (sRing === 'minor' ? minorsSemitone : majorsSemitone).indexOf(tonicPc);
   if(idx === -1) return null;
-  let type = currentL3.chordType;
-  if(type === 'triad' && currentL3.ring === 'minor') type = 'triadMinX';
-  const formula = trainChordFormula(type, 'major');
+  let type = chordType;
+  // мажорное/минорное трезвучие на "чужом" кольце — как кнопки
+  // "Мажор"/"Минор" в "Обучении" (см. trainEffChordType)
+  if(type === 'triad' && ring === 'minor' && sRing === 'major') type = 'triadMinX';
+  if(type === 'triad' && ring === 'major' && sRing === 'minor') type = 'triadMajX';
+  const formula = trainChordFormula(type, sRing);
   if(!formula) return null;
   const n = formula.length;
   let cells = null;
   try{
-    if(l3UseInversions){
-      const plan = inversionPlan(type, 'major', n, currentL3.inversion || 0, l3InvStyle);
-      if(plan) cells = inversionPlanCells(plan, type, 'major', idx);
-    } else if(n >= 4){
-      cells = accChordCells(type, 'major', idx, true);
-    }
-    if(!cells) cells = chordToneCells(type, 'major', idx);
+    const plan = inversionPlan(type, sRing, n, inversion || 0, l3InvStyle);
+    if(plan) cells = inversionPlanCells(plan, type, sRing, idx);
+    if(!cells) cells = chordToneCells(type, sRing, idx);
   }catch(e){ cells = null; }
   if(!cells || !cells.length) return null;
   return cells.map(c=>{
     const cellPc = (c.ring === 'minor' ? minorsSemitone : majorsSemitone)[c.idx];
-    return { ring: c.ring, index: c.idx, pc: c.pc !== undefined ? c.pc : cellPc };
+    return { ring: c.ring, index: c.idx, pc: c.pc !== undefined ? c.pc : cellPc,
+             letter: c.letter, sign: c.sign };
   });
+}
+// то же для текущего вопроса (ответ с клавиатуры ПК / MIDI)
+function l3KeyboardSchemeCells(schemeRing){
+  if(!currentL3 || !currentL3.chordType || currentL3.modeType) return null;
+  return l3SchemeCellsFor(currentL3.ring, currentL3.index, currentL3.chordType, currentL3.inversion, schemeRing);
 }
 /* Засчитывает ноту pc, нажатую на клавиатуре ПК / MIDI (аккорды во
    вкладке "Аккорды/Лады"). Верная нота — вспышка на её ячейке схемы
    (l3KeyboardSchemeCells), неверная — красная вспышка на мажорном
    кольце. Возвращает true, если нажатие обработано. */
-function l3KeyboardAnswer(pc){
-  const cells = l3KeyboardSchemeCells();
+function l3KeyboardAnswer(pc, schemeRing){
+  const sRing = schemeRing === 'minor' ? 'minor' : 'major';
+  const cells = l3KeyboardSchemeCells(sRing);
   if(!cells) return false;
   const letter = rootOf(noteNames[pc]);
   const cell = cells.find(c => c.pc === pc);
@@ -14035,10 +14804,11 @@ function l3KeyboardAnswer(pc){
     l3RegisterAnswer(letter);
     return true;
   }
-  const majIdx = majorsSemitone.indexOf(pc);
-  if(majIdx === -1) return false;
+  // неверная нота — красная вспышка на кольце тоники (мажорном/минорном)
+  const wrongIdx = (sRing === 'minor' ? minorsSemitone : majorsSemitone).indexOf(pc);
+  if(wrongIdx === -1) return false;
   l3LastWedgeAnswerColor = FLASH_RED;
-  flashWedge('major', majIdx, FLASH_RED, 300);
+  flashWedge(sRing, wrongIdx, FLASH_RED, 300);
   return true;
 }
 
@@ -14091,6 +14861,9 @@ const PITCHBEND_DEADZONE = 1024;
 let midiPitchbendZone = 'center';
 
 function handleMidiNote(pc){
+  // Вкладка "Ноты", способ ответа "Клик мыши": ноты с MIDI-клавиатуры
+  // не принимаются как ответ (отвечать только кликом по кругу).
+  if(appMode === 'practice' && practiceLevel === 1) return;
   // "Аккорды/Лады": неверная нота с MIDI-клавиатуры подсвечивается
   // красным не только на круге, но и на клавиатуре-подсказке справа.
   if(appMode === 'practice' && practiceLevel === 3 && l3NameMode){
@@ -14129,9 +14902,12 @@ function handleMidiNoteInner(pc){
   // без обычного цикла мажор<->минор. Если нота НЕ входит в аккорд —
   // ничего не делаем здесь, и ниже срабатывает прежнее (мажор<->минор
   // циклом) поведение, как и раньше.
+  // Колесо Pitch Bend выбирает кольцо тоники: вверх — мажорное (C),
+  // вниз — минорное (Cm); по умолчанию мажорное. Выбор только в памяти,
+  // после перезагрузки снова мажорное.
   if(appMode === 'practice' && practiceLevel === 3
      && currentL3 && currentL3.chordType && !currentL3.modeType){
-    if(l3KeyboardAnswer(pc)) return;
+    if(l3KeyboardAnswer(pc, midiPitchbendRingLock === 'minor' ? 'minor' : 'major')) return;
   }
 
   // Pitch Bend отклонён от центра — кольцо зафиксировано, обычный цикл
@@ -14151,6 +14927,15 @@ function handleMidiNoteInner(pc){
     const idx = minorsSemitone.indexOf(pc);
     if(idx === -1) return;
     clickWedgeByRing('minor', idx);
+    return;
+  }
+
+  // "Аккорды/Лады", лады: без цикла мажор/минор — всегда мажорное кольцо
+  // (если колесом Pitch Bend выбрано кольцо, срабатывает оно — см. выше).
+  if(appMode === 'practice' && practiceLevel === 3 && currentL3 && currentL3.modeType){
+    const idx = majorsSemitone.indexOf(pc);
+    if(idx === -1) return;
+    clickWedgeByRing('major', idx);
     return;
   }
 
@@ -14626,6 +15411,8 @@ document.addEventListener('change', (e)=>{
 function applyDawOutModeButtons(){
   dawPlayTogetherBtn.classList.toggle('active', dawOutMode === 'together');
   dawPlaySequenceBtn.classList.toggle('active', dawOutMode === 'sequence');
+  // копии этих кнопок во вкладках "Ноты" и "Аккорды/Лады"
+  document.querySelectorAll('[data-dawmode]').forEach(b => b.classList.toggle('active', b.getAttribute('data-dawmode') === dawOutMode));
 }
 applyDawOutModeButtons();
 function setDawOutMode(mode){
@@ -14636,6 +15423,286 @@ function setDawOutMode(mode){
 }
 dawPlayTogetherBtn.addEventListener('click', ()=> setDawOutMode('together'));
 dawPlaySequenceBtn.addEventListener('click', ()=> setDawOutMode('sequence'));
+
+/* =========================================================
+   ВЫВОД ЗВУКА: "Без звука" / "Онлайн" / "DAW" (блок "Сыграть аккорд в").
+   Один общий выбор на все вкладки ("Обучение", "Ноты", "Аккорды/Лады") —
+   у каждой вкладки своя копия кнопок (.soundOutBox), все синхронизированы.
+   - "Без звука" (по умолчанию) — ничего не играет;
+   - "Онлайн" — звук в браузере (громкость + тембр, как в "Слухе");
+   - "DAW" — как раньше, через MIDI-выход.
+   Кнопки "за раз"/"по очереди" — общие для "Онлайн" и "DAW" (dawOutMode).
+   Во вкладках "Ноты" и "Аккорды/Лады" звучит только вопрос — в момент
+   его появления (см. playPracticeQuestionSound).
+   ========================================================= */
+const SOUND_OUT_MODE_KEY = 'circleOfFifths_soundOutMode_v1';        // 'mute' | 'online' | 'daw'
+const SOUND_ONLINE_VOLUME_KEY = 'circleOfFifths_soundOnlineVolume_v1';
+const SOUND_ONLINE_INSTRUMENT_KEY = 'circleOfFifths_soundOnlineInstrument_v1';
+
+let soundOutMode = 'mute';
+try{
+  const savedSound = localStorage.getItem(SOUND_OUT_MODE_KEY);
+  if(savedSound === 'online' || savedSound === 'daw') soundOutMode = savedSound;
+}catch(e){}
+
+let soundOnlineVolume = 80;
+try{
+  const v = parseInt(localStorage.getItem(SOUND_ONLINE_VOLUME_KEY), 10);
+  if(isFinite(v) && v >= 0 && v <= 100) soundOnlineVolume = v;
+}catch(e){}
+
+// Список тембров — тот же, что в "Слухе"
+const SOUND_GM_INSTRUMENTS = ['acoustic_grand_piano','bright_acoustic_piano','electric_piano_1','harpsichord','acoustic_guitar_nylon','acoustic_guitar_steel','violin','viola','cello','contrabass','trumpet','trombone','french_horn','flute','clarinet','oboe','synth_strings_1','choir_aahs'];
+const SOUND_INSTRUMENT_NAMES = {
+  ru: { acoustic_grand_piano: 'Рояль (Grand Piano)', bright_acoustic_piano: 'Яркое пианино', electric_piano_1: 'Электропианино', harpsichord: 'Клавесин', acoustic_guitar_nylon: 'Гитара (нейлон)', acoustic_guitar_steel: 'Гитара (сталь)', violin: 'Скрипка', viola: 'Альт', cello: 'Виолончель', contrabass: 'Контрабас', trumpet: 'Труба', trombone: 'Тромбон', french_horn: 'Валторна', flute: 'Флейта', clarinet: 'Кларнет', oboe: 'Гобой', synth_strings_1: 'Синти-струнные', choir_aahs: 'Хор (Aah)' },
+  en: { acoustic_grand_piano: 'Grand Piano', bright_acoustic_piano: 'Bright Piano', electric_piano_1: 'Electric Piano', harpsichord: 'Harpsichord', acoustic_guitar_nylon: 'Guitar (nylon)', acoustic_guitar_steel: 'Guitar (steel)', violin: 'Violin', viola: 'Viola', cello: 'Cello', contrabass: 'Double Bass', trumpet: 'Trumpet', trombone: 'Trombone', french_horn: 'French Horn', flute: 'Flute', clarinet: 'Clarinet', oboe: 'Oboe', synth_strings_1: 'Synth Strings', choir_aahs: 'Choir (Aah)' },
+  zh: { acoustic_grand_piano: '三角钢琴', bright_acoustic_piano: '明亮钢琴', electric_piano_1: '电钢琴', harpsichord: '羽管键琴', acoustic_guitar_nylon: '尼龙弦吉他', acoustic_guitar_steel: '钢弦吉他', violin: '小提琴', viola: '中提琴', cello: '大提琴', contrabass: '低音提琴', trumpet: '小号', trombone: '长号', french_horn: '圆号', flute: '长笛', clarinet: '单簧管', oboe: '双簧管', synth_strings_1: '合成弦乐', choir_aahs: '合唱（Aah）' }
+};
+let soundOnlineInstrument = 'builtin';
+try{
+  const savedInst = localStorage.getItem(SOUND_ONLINE_INSTRUMENT_KEY);
+  if(savedInst === 'builtin' || SOUND_GM_INSTRUMENTS.includes(savedInst)) soundOnlineInstrument = savedInst;
+}catch(e){}
+
+function applySoundOutModeUi(){
+  document.querySelectorAll('.soundOutBox').forEach(box => box.setAttribute('data-sound', soundOutMode));
+  document.querySelectorAll('.soundOutModeBtn').forEach(b => b.classList.toggle('active', b.getAttribute('data-soundout') === soundOutMode));
+}
+function setSoundOutMode(mode){
+  if(mode !== 'mute' && mode !== 'online' && mode !== 'daw') return;
+  if(mode === soundOutMode) return; // одна кнопка нажата всегда
+  if(typeof clearDawTimers === 'function') clearDawTimers();
+  stopOnlineNotes();
+  soundOutMode = mode;
+  try{ localStorage.setItem(SOUND_OUT_MODE_KEY, soundOutMode); }catch(e){}
+  applySoundOutModeUi();
+  // высота содержимого меняется — пересчитываем выравнивание высоты вкладок
+  try{ if(typeof syncTrainingPanelHeight === 'function') syncTrainingPanelHeight(); }catch(e){}
+}
+document.querySelectorAll('.soundOutModeBtn').forEach(b => {
+  b.addEventListener('click', () => setSoundOutMode(b.getAttribute('data-soundout')));
+});
+// копии кнопок "за раз"/"по очереди" во вкладках "Ноты" и "Аккорды/Лады" —
+// работают ровно как оригиналы в "Обучении" (тот же setDawOutMode)
+document.querySelectorAll('.dawOnlineRow [data-dawmode]').forEach(b => {
+  if(b === dawPlayTogetherBtn || b === dawPlaySequenceBtn) return;
+  b.addEventListener('click', () => setDawOutMode(b.getAttribute('data-dawmode')));
+});
+applyDawOutModeButtons();
+applySoundOutModeUi();
+
+// ---- громкость (все копии ползунка синхронизированы) ----
+function applySoundVolumeUi(){
+  document.querySelectorAll('.soundVolumeSlider').forEach(sl => { sl.value = String(soundOnlineVolume); });
+  document.querySelectorAll('.soundVolumeVal').forEach(el => { el.textContent = soundOnlineVolume + '%'; });
+}
+document.querySelectorAll('.soundVolumeSlider').forEach(sl => {
+  sl.addEventListener('input', () => {
+    soundOnlineVolume = Math.max(0, Math.min(100, parseInt(sl.value, 10) || 0));
+    applySoundVolumeUi();
+  });
+  sl.addEventListener('change', () => {
+    try{ localStorage.setItem(SOUND_ONLINE_VOLUME_KEY, String(soundOnlineVolume)); }catch(e){}
+    // снимаем фокус, чтобы ответы с клавиатуры ПК продолжали работать
+    sl.blur();
+  });
+});
+applySoundVolumeUi();
+
+// ---- тембр (все копии списка синхронизированы) ----
+function populateSoundInstrumentSelects(){
+  const names = SOUND_INSTRUMENT_NAMES[appLang] || SOUND_INSTRUMENT_NAMES.ru;
+  document.querySelectorAll('.soundInstrumentSelect').forEach(sel => {
+    sel.innerHTML = '';
+    const builtinOpt = document.createElement('option');
+    builtinOpt.value = 'builtin';
+    builtinOpt.textContent = t('soundBuiltinSynth');
+    sel.appendChild(builtinOpt);
+    SOUND_GM_INSTRUMENTS.forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = (names[id] || id) + t('soundSampleSuffix');
+      sel.appendChild(opt);
+    });
+    sel.value = soundOnlineInstrument;
+  });
+}
+document.querySelectorAll('.soundInstrumentSelect').forEach(sel => {
+  sel.addEventListener('change', () => {
+    soundOnlineInstrument = sel.value;
+    document.querySelectorAll('.soundInstrumentSelect').forEach(o => { if(o !== sel) o.value = sel.value; });
+    try{ localStorage.setItem(SOUND_ONLINE_INSTRUMENT_KEY, soundOnlineInstrument); }catch(e){}
+    // заранее подгружаем сэмплы, чтобы первый аккорд прозвучал без задержки
+    if(soundOnlineInstrument !== 'builtin') loadSoundfontInstrument(soundOnlineInstrument);
+    sel.blur();
+  });
+});
+populateSoundInstrumentSelects();
+
+// ---- звук в браузере (тот же движок, что в "Слухе") ----
+// Отдельные шины громкости: интернет-инструменты (×2) и встроенный синтезатор (÷3)
+const SOUND_ONLINE_BUS_GAIN = 2;
+const SOUND_BUILTIN_BUS_GAIN = 1 / 3;
+const SOUND_ONLINE_NOTE_SEC = 0.9;   // длительность ноты
+const SOUND_ONLINE_VELOCITY = 100;   // сила нажатия (из 127)
+let soundAudioCtx = null;
+let soundOnlineBus = null;
+let soundBuiltinBus = null;
+const soundInstrumentCache = {};
+let soundfontLoaderPromise = null;
+let soundOnlineActive = [];   // звучащие/запланированные ноты — [{stop()}]
+let soundOnlinePlayToken = 0;
+
+function ensureSoundAudioCtx(){
+  if(!soundAudioCtx){
+    soundAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Лимитер на выходе: чтобы усиленный звук не "упирался в потолок" и не хрипел
+    const limiter = soundAudioCtx.createDynamicsCompressor();
+    limiter.threshold.value = -6;
+    limiter.knee.value = 3;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.15;
+    limiter.connect(soundAudioCtx.destination);
+    soundOnlineBus = soundAudioCtx.createGain();
+    soundOnlineBus.gain.value = SOUND_ONLINE_BUS_GAIN;
+    soundOnlineBus.connect(limiter);
+    soundBuiltinBus = soundAudioCtx.createGain();
+    soundBuiltinBus.gain.value = SOUND_BUILTIN_BUS_GAIN;
+    soundBuiltinBus.connect(soundAudioCtx.destination);
+  }
+  if(soundAudioCtx.state === 'suspended') soundAudioCtx.resume();
+  return soundAudioCtx;
+}
+function soundMidiToFreq(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+
+function soundBuiltinSynthPlay(midi, gain, durationSec, startOffsetSec){
+  const ctx = ensureSoundAudioCtx();
+  const freq = soundMidiToFreq(midi);
+  const t0 = ctx.currentTime + (startOffsetSec || 0);
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(soundBuiltinBus);
+  const partials = [1, 2, 3, 4.2, 5.4];
+  const partialGains = [1, 0.5, 0.25, 0.12, 0.06];
+  const oscs = [];
+  partials.forEach((mult, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq * mult;
+    const g = ctx.createGain();
+    g.gain.value = partialGains[i];
+    osc.connect(g).connect(master);
+    osc.start(t0);
+    osc.stop(t0 + durationSec + 0.5);
+    oscs.push(osc);
+  });
+  const partialGainSum = partialGains.reduce((a, b) => a + b, 0);
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(Math.max(0.008, (gain * 0.5) / partialGainSum), t0 + 0.008);
+  master.gain.exponentialRampToValueAtTime(0.0001, t0 + durationSec + 0.4);
+  return {
+    stop(){
+      const now = ctx.currentTime;
+      try{
+        master.gain.cancelScheduledValues(now);
+        master.gain.setValueAtTime(master.gain.value, now);
+        master.gain.linearRampToValueAtTime(0, now + 0.03);
+      }catch(e){}
+      oscs.forEach(o => { try{ o.stop(now + 0.05); }catch(e){} });
+    }
+  };
+}
+
+function loadSoundfontLib(){
+  if(window.Soundfont) return Promise.resolve();
+  if(soundfontLoaderPromise) return soundfontLoaderPromise;
+  soundfontLoaderPromise = new Promise((resolve, reject) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js';
+    sc.onload = () => resolve();
+    sc.onerror = () => { soundfontLoaderPromise = null; reject(new Error('Не удалось загрузить soundfont-player с CDN')); };
+    document.head.appendChild(sc);
+  });
+  return soundfontLoaderPromise;
+}
+async function loadSoundfontInstrument(name){
+  try{
+    await loadSoundfontLib();
+    const ctx = ensureSoundAudioCtx();
+    if(!soundInstrumentCache[name]) soundInstrumentCache[name] = await window.Soundfont.instrument(ctx, name, { destination: soundOnlineBus });
+    return soundInstrumentCache[name];
+  }catch(e){
+    console.error(e);
+    return null;
+  }
+}
+
+function stopOnlineNotes(){
+  soundOnlinePlayToken++;
+  soundOnlineActive.forEach(n => { try{ n.stop(); }catch(e){} });
+  soundOnlineActive = [];
+}
+
+// notes — [{pc, rank}] (тот же формат, что уходит в DAW); высоты нот —
+// те же, что и в DAW (dawNoteNumberFor). "за раз" — все ноты вместе,
+// "по очереди" — с "Интервалом между нотами" из настроек DAW.
+async function playNotesOnline(notes){
+  if(!notes || notes.length === 0) return;
+  // до первого действия пользователя браузер не даёт играть звук
+  if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+  stopOnlineNotes();
+  const token = soundOnlinePlayToken;
+  const midis = notes.map(n => Math.min(127, Math.max(0, dawNoteNumberFor(n))));
+  const gapSec = (dawOutMode === 'sequence') ? parseDawInterval(dawIntervalInput.value) : 0;
+  const gain = (SOUND_ONLINE_VELOCITY / 127) * (soundOnlineVolume / 100) * 2;
+  ensureSoundAudioCtx();
+  let inst = null;
+  if(soundOnlineInstrument !== 'builtin'){
+    inst = await loadSoundfontInstrument(soundOnlineInstrument);
+    if(token !== soundOnlinePlayToken) return; // пока грузились сэмплы, уже выбран другой аккорд
+  }
+  midis.forEach((m, i) => {
+    const offset = i * gapSec;
+    if(inst){
+      const node = inst.play(m, soundAudioCtx.currentTime + offset, { gain, duration: SOUND_ONLINE_NOTE_SEC });
+      if(node && typeof node.stop === 'function') soundOnlineActive.push({ stop(){ node.stop(); } });
+    } else {
+      soundOnlineActive.push(soundBuiltinSynthPlay(m, gain, SOUND_ONLINE_NOTE_SEC, offset));
+    }
+  });
+}
+
+// Вопрос во вкладках "Ноты" (level 1/2 — одна нота) и "Аккорды/Лады"
+// (level 3 — аккорд/лад вопроса) — звучит в момент появления вопроса.
+function playPracticeQuestionSound(level){
+  try{
+    if(soundOutMode === 'mute') return;
+    if(appMode !== 'practice' || practiceLevel !== level) return;
+    let notes = null;
+    if(level === 1 || level === 2){
+      const cur = (level === 1) ? current : currentL2;
+      if(cur){
+        const pc = (cur.ring === 'minor') ? minorsSemitone[cur.index] : majorsSemitone[cur.index];
+        if(typeof pc === 'number' && pc >= 0) notes = [{ pc, rank: 0 }];
+      }
+    } else if(level === 3){
+      notes = (typeof computeL3PianoNotes === 'function') ? computeL3PianoNotes() : null;
+    }
+    if(!notes || notes.length === 0) return;
+    // вопрос всегда отпускается сам (по таймеру), а не держится, пока
+    // зажата клавиша MIDI-клавиатуры, которой дали ответ
+    const prevTrigger = midiKeyTriggerActive;
+    const prevTriggerNote = midiKeyTriggerNoteNum;
+    // во вкладке "Ноты" кнопок "за раз"/"по очереди" нет — одна нота
+    // вопроса играется всегда (выбор этих кнопок в других вкладках не трогаем)
+    const prevDawMode = dawOutMode;
+    if(level === 1 || level === 2) dawOutMode = 'together';
+    midiKeyTriggerActive = false;
+    try{ playCurrentTrainChordToDaw(notes); }
+    finally{ midiKeyTriggerActive = prevTrigger; midiKeyTriggerNoteNum = prevTriggerNote; dawOutMode = prevDawMode; }
+  }catch(e){}
+}
 
 // pc(0..11) + rank(0,1,2...) ноты обучения -> абсолютный номер MIDI-ноты
 // (rank=0 -> октава начиная с C4=60, дальше вверх, как рисуется на
@@ -14923,10 +15990,31 @@ if(dawSplitCheckbox){
 
 // проигрывает текущий выбранный аккорд обучения в DAW, если включена
 // одна из кнопок "Сыграть в DAW" и выбран MIDI-выход
-function playCurrentTrainChordToDaw(){
+// Ноты аккорда "Обучения" для проигрывания — в том же обращении, что
+// показано на клавиатуре (кнопки "Основное/Первое/Второе/Третье").
+function computeTrainPlayNotes(){
+  const base = (typeof computeTrainPianoNotes === 'function') ? computeTrainPianoNotes() : null;
+  if(!base || base.length === 0) return base;
+  if(!trainCompactPiano && trainShowInversions && !trainModeType){
+    const maxInv = Math.min(base.length, 4) - 1;
+    const inv = Math.max(0, Math.min(trainInversion || 0, maxInv));
+    if(inv > 0) return invertTrainNotes(base, inv, 0);
+  }
+  return base;
+}
+
+// notesOverride — готовый список нот {pc, rank} (вопрос во вкладках "Ноты"
+// и "Аккорды/Лады"); без него играется текущий аккорд "Обучения".
+function playCurrentTrainChordToDaw(notesOverride){
   if(dawOutMode === 'off') return;
+  if(soundOutMode === 'online'){
+    const notesOnline = notesOverride || computeTrainPlayNotes();
+    playNotesOnline(notesOnline);
+    return;
+  }
+  if(soundOutMode !== 'daw') return;
   if(!dawMidiOutput) return;
-  const notes = (typeof computeTrainPianoNotes === 'function') ? computeTrainPianoNotes() : null;
+  const notes = notesOverride || computeTrainPlayNotes();
   if(!notes || notes.length === 0) return;
   clearDawTimers();
   const velByte = computeDawVelocityByte();
@@ -15041,7 +16129,8 @@ const CHORD_HOTKEY_TRAIN_BTN_ID = {
   mmaj9:'trainMMaj9Btn', dom11:'trainDom11Btn', add11:'trainAdd11Btn',
   madd11:'trainMAdd11Btn', maj11:'trainMaj11Btn', m11:'trainM11Btn',
   mmaj11:'trainMMaj11Btn', dom13:'trainDom13Btn',
-  maj13:'trainMaj13Btn', m13:'trainM13Btn', mmaj13:'trainMMaj13Btn'
+  maj13:'trainMaj13Btn', m13:'trainM13Btn', mmaj13:'trainMMaj13Btn',
+  dom7b5:'trainDom7b5Btn', dom7s5:'trainDom7s5Btn', dom7sus4:'trainDom7Sus4Btn', six9:'trainSix9Btn'
 };
 const CHORD_HOTKEY_LEVEL3_BTN_ID = {
   triadMaj:'level3MajorBtn', triadMin:'level3MinorBtn', sus2:'level3Sus2Btn', sus4:'level3Sus4Btn',
@@ -15051,7 +16140,8 @@ const CHORD_HOTKEY_LEVEL3_BTN_ID = {
   mmaj9:'level3MMaj9Btn', dom11:'level3Dom11Btn', add11:'level3Add11Btn',
   madd11:'level3MAdd11Btn', maj11:'level3Maj11Btn', m11:'level3M11Btn',
   mmaj11:'level3MMaj11Btn', dom13:'level3Dom13Btn',
-  maj13:'level3Maj13Btn', m13:'level3M13Btn', mmaj13:'level3MMaj13Btn'
+  maj13:'level3Maj13Btn', m13:'level3M13Btn', mmaj13:'level3MMaj13Btn',
+  dom7b5:'level3Dom7b5Btn', dom7s5:'level3Dom7s5Btn', dom7sus4:'level3Dom7Sus4Btn', six9:'level3Six9Btn'
 };
 
 // цифровая клавиша '1'..'9','0' -> позиция 0..9 внутри "страницы" (первой
@@ -15144,6 +16234,16 @@ updateMobilePianoGeometry();
 applyZoom();
 // Восстановление масштаба мини-клавиатуры из localStorage
 applyPianoZoom();
+// Самый первый запуск: в "Обучении" сразу нажата C на мажорном кольце
+// (тип аккорда по умолчанию — "Мажор", получается C мажор). При
+// следующих запусках ничего не нажимается, как и раньше.
+if(circleIsFirstLaunch){
+  try{
+    if(!trainModeType && trainChordType === 'triadMaj' && pressedTrainTonicRing === null){
+      selectTrainTonic('major', 0);
+    }
+  }catch(e){}
+}
 </script>
 <script>
 (function(){
@@ -15158,6 +16258,15 @@ applyPianoZoom();
   function showTip(icon){
     var text = icon.getAttribute('data-tip');
     if(!text) return;
+    tip.classList.toggle('tipWide', icon.hasAttribute('data-tip-wide'));
+    // data-tip-plain — текст как есть, без красной подсветки частей
+    // (список горячих клавиш)
+    if(icon.hasAttribute('data-tip-plain')){
+      tip.textContent = text;
+      tip.style.display = 'block';
+      positionTip(icon);
+      return;
+    }
     // Если в тексте подсказки есть куски, обрамлённые "@@...@@" — красим
     // каждый такой кусок отдельным цветом --tip-formula-red (см. :root в
     // начале файла, там же можно поменять цвет/прозрачность). Можно
@@ -15254,6 +16363,221 @@ applyPianoZoom();
   // чтобы не зависала в неверном месте.
   window.addEventListener('scroll', hideTip, true);
   window.addEventListener('resize', hideTip);
+})();
+</script>
+<script>
+/* ===== Скрытие курсора мыши по клавише V / М =====
+   Нажали V (на русской раскладке М) — курсор пропадает (класс
+   body.cursor-idle, см. стили). Сдвинули мышь — курсор снова виден.
+   Ctrl/Cmd/Alt + V (вставка) и ввод в текстовые поля не перехватываются. */
+(function(){
+  var lastX = null, lastY = null;
+  function hidden(){ return document.body && document.body.classList.contains('cursor-idle'); }
+  window.addEventListener('keydown', function(e){
+    if(e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    var k = (e.key || '').toLowerCase();
+    if(e.code !== 'KeyV' && k !== 'v' && k !== 'м') return;
+    var a = document.activeElement;
+    if(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) return;
+    if(document.body) document.body.classList.add('cursor-idle');
+  }, true);
+  // Курсор возвращается только при настоящем сдвиге мыши (сравниваем
+  // координаты — браузер иногда присылает "движение" без сдвига).
+  document.addEventListener('mousemove', function(e){
+    var moved = (lastX === null) || e.screenX !== lastX || e.screenY !== lastY;
+    lastX = e.screenX; lastY = e.screenY;
+    if(moved && hidden()) document.body.classList.remove('cursor-idle');
+  }, true);
+})();
+</script>
+<!-- =========================================================
+     ТУТОРИАЛ (одно окно). Показывается один раз на этом компьютере
+     (в этом браузере), только в десктопной раскладке. После кнопки
+     "Хорошо" больше не появляется (ключ TUTORIAL_SHOWN_KEY).
+     При показе панель настроек сама немного прокручивается вниз и
+     возвращается обратно — показывает, что её можно листать.
+     ========================================================= -->
+<style>
+  #cofTutorial{
+    position:fixed;
+    z-index:1000;
+    width:320px;
+    max-width:92vw;
+    box-sizing:border-box;
+    padding:16px 18px 14px;
+    background:var(--menu-bg);
+    color:var(--app-text-color);
+    border:1px solid var(--menu-border);
+    border-radius:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    font-family:var(--font);
+    font-size:15px;
+    line-height:1.35;
+    display:none;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  #cofTutorial.show{ opacity:1; }
+  #cofTutorial .tutRow{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:12px;
+  }
+  #cofTutorial .tutIcon{
+    flex:0 0 52px;
+    display:flex;
+    justify-content:center;
+  }
+  #cofTutorial .tutKey{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:44px;
+    height:34px;
+    padding:0 6px;
+    box-sizing:border-box;
+    border:1px solid var(--menu-border);
+    border-bottom-width:3px;
+    border-radius:6px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    font-size:15px;
+  }
+  #cofTutorial .tutWheel{
+    animation:cofTutWheel 1.4s ease-in-out infinite;
+  }
+  @keyframes cofTutWheel{
+    0%   { transform:translateY(0);   opacity:1; }
+    70%  { transform:translateY(7px); opacity:0; }
+    100% { transform:translateY(0);   opacity:0; }
+  }
+  #cofTutorial .tutOk{
+    display:block;
+    margin:4px 0 0 auto;
+    padding:7px 18px;
+    border:none;
+    border-radius:6px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    font-family:var(--font);
+    font-size:15px;
+    cursor:pointer;
+  }
+  #cofTutorial .tutOk:hover{ background:var(--btn-bg-hover); }
+</style>
+<div id="cofTutorial" role="dialog" aria-live="polite">
+  <div class="tutRow" id="cofTutScrollRow">
+    <div class="tutIcon">
+      <!-- мышь с колёсиком, колёсико "катится" вниз -->
+      <svg width="26" height="40" viewBox="0 0 26 40" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="23" height="37" rx="11.5" stroke="currentColor" stroke-width="2"/>
+        <rect class="tutWheel" x="11" y="8" width="4" height="8" rx="2" fill="currentColor"/>
+      </svg>
+    </div>
+    <div data-i18n="tutScroll">Прокрутите вниз, чтобы увидеть все настройки</div>
+  </div>
+  <div class="tutRow">
+    <div class="tutIcon"><span class="tutKey" data-i18n="tutKey">Y / Н</span></div>
+    <div data-i18n="tutToggle">Открыть/закрыть настройки — клавиша Y/Н или нажатие на колесо мыши</div>
+  </div>
+  <button class="tutOk" id="cofTutOk" data-i18n="tutOk">Хорошо</button>
+</div>
+<script>
+(function(){
+  var TUTORIAL_SHOWN_KEY = 'circleTutorialShown';
+  var AUTO_SCROLL_DISTANCE = 180; // px — насколько панель съезжает вниз при показе
+  var AUTO_SCROLL_DELAY = 700;    // ms — пауза перед автопрокруткой
+
+  // Тексты окна на 3 языках (переключаются вместе с языком приложения)
+  try{
+    I18N.tutScroll = { ru:'Прокрутите вниз, чтобы увидеть все настройки', en:'Scroll down to see all settings', zh:'向下滚动查看所有设置' };
+    I18N.tutToggle = { ru:'Открыть/закрыть настройки — клавиша Y/Н или нажатие на колесо мыши', en:'Open/close settings — Y key or press the mouse wheel', zh:'打开/关闭设置 — 按 Y 键或按下鼠标滚轮' };
+    I18N.tutOk     = { ru:'Хорошо', en:'OK', zh:'好的' };
+    I18N.tutKey    = { ru:'Y / Н', en:'Y', zh:'Y' };
+  }catch(e){}
+
+  var box = document.getElementById('cofTutorial');
+  var okBtn = document.getElementById('cofTutOk');
+  var scrollRow = document.getElementById('cofTutScrollRow');
+  if(!box || !okBtn) return;
+
+  try{ if(localStorage.getItem(TUTORIAL_SHOWN_KEY) === '1') return; }catch(e){ return; }
+
+  function applyTexts(){
+    box.querySelectorAll('[data-i18n]').forEach(function(el){
+      var entry = I18N[el.getAttribute('data-i18n')];
+      if(entry) el.textContent = entry[appLang] || entry.ru;
+    });
+  }
+
+  // Окно ставится справа от панели настроек, если там есть место,
+  // иначе слева, иначе — внизу по центру экрана поверх панели.
+  function position(){
+    var r = sidePanel.getBoundingClientRect();
+    var w = box.offsetWidth, h = box.offsetHeight, gap = 20;
+    var top = Math.max(12, Math.min(window.innerHeight - h - 12, r.top + r.height/2 - h/2));
+    box.style.bottom = ''; box.style.transform = '';
+    if(r.right + gap + w <= window.innerWidth - 12){
+      box.style.left = (r.right + gap) + 'px'; box.style.top = top + 'px';
+    } else if(r.left - gap - w >= 12){
+      box.style.left = (r.left - gap - w) + 'px'; box.style.top = top + 'px';
+    } else {
+      box.style.left = '50%'; box.style.top = 'auto';
+      box.style.bottom = '16px'; box.style.transform = 'translateX(-50%)';
+    }
+  }
+
+  function animateScroll(to, ms, done){
+    var from = sidePanel.scrollTop, start = null;
+    function step(ts){
+      if(start === null) start = ts;
+      var p = Math.min(1, (ts - start) / ms);
+      var k = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;
+      sidePanel.scrollTop = from + (to - from) * k;
+      if(p < 1) requestAnimationFrame(step); else if(done) done();
+    }
+    requestAnimationFrame(step);
+  }
+
+  function autoScrollDemo(){
+    var max = sidePanel.scrollHeight - sidePanel.clientHeight;
+    if(max <= 0) return;
+    var start = sidePanel.scrollTop;
+    var down = Math.min(max, start + AUTO_SCROLL_DISTANCE);
+    animateScroll(down, 800, function(){
+      setTimeout(function(){ animateScroll(start, 700); }, 450);
+    });
+  }
+
+  function show(){
+    if(typeof isMobile !== 'undefined' && isMobile) return; // только на ПК
+    if(!isSidePanelOpen()) setSidePanelOpen(true);
+    applyTexts();
+    requestAnimationFrame(function(){
+      // Строка про прокрутку нужна только если панель действительно листается
+      scrollRow.style.display = (sidePanel.scrollHeight > sidePanel.clientHeight) ? '' : 'none';
+      box.style.display = 'block';
+      position();
+      requestAnimationFrame(function(){ box.classList.add('show'); });
+      setTimeout(autoScrollDemo, AUTO_SCROLL_DELAY);
+    });
+    window.addEventListener('resize', onResize);
+  }
+
+  function onResize(){ if(box.style.display === 'block') position(); }
+
+  okBtn.addEventListener('click', function(){
+    try{ localStorage.setItem(TUTORIAL_SHOWN_KEY, '1'); }catch(e){}
+    box.classList.remove('show');
+    window.removeEventListener('resize', onResize);
+    setTimeout(function(){ box.style.display = 'none'; }, 260);
+  });
+  // клик по окну не должен доходить до затемнения/круга
+  box.addEventListener('mousedown', function(e){ if(e.button !== 1) e.stopPropagation(); });
+
+  if(document.readyState === 'complete') setTimeout(show, 400);
+  else window.addEventListener('load', function(){ setTimeout(show, 400); });
 })();
 </script>
 </body>
