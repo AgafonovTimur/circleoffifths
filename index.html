@@ -743,6 +743,8 @@
   }
   /* Широкая подсказка (список горячих клавиш) */
   #globalInfoTooltip.tipWide{
+    /* рамка как у меню настроек (#sidePanel) */
+    border:1px solid var(--menu-border);
     max-width:min(560px, 94vw);
     font-size:14px;
     line-height:1.35;
@@ -1068,6 +1070,13 @@
     font-size:14px;
     font-weight:bold;
     font-family:var(--font);
+  }
+  /* Буква минора "m" после названия ноты (см. setNoteText):
+     меньше названия ноты, курсивом и чуть прозрачнее */
+  .minorMark{
+    font-size:0.75em;
+    font-style:italic;
+    opacity:0.85;
   }
   .level3HintLabel{
     pointer-events:none;
@@ -2766,6 +2775,12 @@
         </div>
 
         <div id="notesMidiPanel" class="midiPanelWrap">
+          <!-- "Название нот" ABC / До ре ми — копия переключателя из "Обучения", над MIDI -->
+          <div class="cofBoxTitle" data-i18n="noteNamingTitle">Название нот</div>
+          <div class="noteNamingSwitchRow cofBox">
+            <button type="button" class="noteNamingBtn active" data-system="abc">ABC</button>
+            <button type="button" class="noteNamingBtn" data-system="solfege" data-i18n="noteNamingSolfege">До ре ми</button>
+          </div>
           <div class="cofBoxTitle">MIDI</div>
           <div class="midiPanel midiPanelMini cofBox">
           <div class="midiPanelRow">
@@ -2794,11 +2809,10 @@
                Онлайн / DAW + общие "за раз"/"по очереди" + громкость/тембр).
                Все копии синхронизированы (см. "Вывод звука" в <script>). -->
           <div class="cofBoxTitle dawOutBoxTitle" data-i18n="dawOutTitle">Сыграть аккорд в</div>
-          <div class="midiPanel midiPanelMini cofBox soundOutBox" data-sound="mute">
+          <div class="midiPanel midiPanelMini cofBox soundOutBox notesSoundOutBox" data-sound="mute">
         <div class="dawOutBtnRow soundOutModeRow">
           <button type="button" class="noteBtn soundOutModeBtn" data-soundout="mute" data-i18n="soundOutMute">Без звука</button>
           <button type="button" class="noteBtn soundOutModeBtn" data-soundout="online" data-i18n="soundOutOnline">Онлайн</button>
-          <button type="button" class="noteBtn soundOutModeBtn" data-soundout="daw">DAW</button>
         </div>
         <div class="onlineOnly soundOnlineFields">
           <div class="midiPanelRow soundVolumeRow">
@@ -2844,6 +2858,10 @@
           <button class="ringBtn" id="level3MinorBtn" type="button" data-chordtype="triadMin" data-i18n="btnMinor">Минор</button>
           <span class="infoIcon" data-tip="Ступени минора - @@1 b3 5@@" data-i18n-tip="tipTriadMin">i</span>
         </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3DimBtn" type="button" data-chordtype="dim">dim</button>
+          <span class="infoIcon" data-tip="Ступени уменьшённого трезвучия - @@1 b3 b5@@" data-i18n-tip="tipDim">i</span>
+        </div>
 
         <div class="ringBtnRow rowStart">
           <button class="ringBtn" id="level3Sus2Btn" type="button" data-chordtype="sus2">Sus2</button>
@@ -2852,6 +2870,10 @@
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Sus4Btn" type="button" data-chordtype="sus4">Sus4</button>
           <span class="infoIcon" data-tip="Ступени @@1 4 5@@" data-i18n-tip="tipSus4">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3AugBtn" type="button" data-chordtype="aug">aug</button>
+          <span class="infoIcon" data-tip="Ступени увеличенного трезвучия - @@1 3 #5@@" data-i18n-tip="tipAug">i</span>
         </div>
 
         <div class="ringBtnRow rowStart">
@@ -2883,6 +2905,14 @@
         <div class="ringBtnRow rowStart">
           <button class="ringBtn" id="level3Dom7Sus4Btn" type="button" data-chordtype="dom7sus4">7sus4</button>
           <span class="infoIcon" data-tip="7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7." data-i18n-tip="tip7sus4">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3Dim7Btn" type="button" data-chordtype="dim7">dim7</button>
+          <span class="infoIcon" data-tip="dim7 = Уменьшённое трезвучие + уменьшённая 7-я ступень - @@1 b3 b5 bb7.@@" data-i18n-tip="tipDim7">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3M7b5Btn" type="button" data-chordtype="m7b5">m7b5</button>
+          <span class="infoIcon" data-tip="m7b5 = Минор с пониженной 5-й ступенью + малая 7-я ступень - @@1 b3 b5 b7.@@" data-i18n-tip="tipM7b5">i</span>
         </div>
 
         <div class="ringBtnRow rowStart">
@@ -3047,6 +3077,12 @@
            комментарий у #notesMidiPanel выше, здесь та же логика,
            только для вкладки "Аккорды/Лады". ===== -->
       <div id="l3MidiPanel" class="midiPanelWrap">
+          <!-- "Название нот" ABC / До ре ми — копия переключателя из "Обучения", над MIDI -->
+          <div class="cofBoxTitle" data-i18n="noteNamingTitle">Название нот</div>
+          <div class="noteNamingSwitchRow cofBox">
+            <button type="button" class="noteNamingBtn active" data-system="abc">ABC</button>
+            <button type="button" class="noteNamingBtn" data-system="solfege" data-i18n="noteNamingSolfege">До ре ми</button>
+          </div>
           <div class="cofBoxTitle">MIDI</div>
           <div class="midiPanel midiPanelMini cofBox">
         <div class="midiPanelRow">
@@ -3136,6 +3172,10 @@
             <button class="ringBtn" id="trainMinorBtn" data-chord="triadMin" data-i18n="btnMinor">Минор</button>
             <span class="infoIcon" data-tip="Ступени минора - @@1 b3 5@@" data-i18n-tip="tipTriadMin">i</span>
           </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainDimBtn" data-chord="dim">dim</button>
+            <span class="infoIcon" data-tip="Ступени уменьшённого трезвучия - @@1 b3 b5@@" data-i18n-tip="tipDim">i</span>
+          </div>
 
           <div class="ringBtnRow rowStart">
             <button class="ringBtn" id="trainSus2Btn" data-chord="sus2">Sus2</button>
@@ -3144,6 +3184,10 @@
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainSus4Btn" data-chord="sus4">Sus4</button>
             <span class="infoIcon" data-tip="Ступени @@1 4 5@@" data-i18n-tip="tipSus4">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainAugBtn" data-chord="aug">aug</button>
+            <span class="infoIcon" data-tip="Ступени увеличенного трезвучия - @@1 3 #5@@" data-i18n-tip="tipAug">i</span>
           </div>
 
           <div class="ringBtnRow rowStart">
@@ -3175,6 +3219,14 @@
           <div class="ringBtnRow rowStart">
             <button class="ringBtn" id="trainDom7Sus4Btn" data-chord="dom7sus4">7sus4</button>
             <span class="infoIcon" data-tip="7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7." data-i18n-tip="tip7sus4">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainDim7Btn" data-chord="dim7">dim7</button>
+            <span class="infoIcon" data-tip="dim7 = Уменьшённое трезвучие + уменьшённая 7-я ступень - @@1 b3 b5 bb7.@@" data-i18n-tip="tipDim7">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainM7b5Btn" data-chord="m7b5">m7b5</button>
+            <span class="infoIcon" data-tip="m7b5 = Минор с пониженной 5-й ступенью + малая 7-я ступень - @@1 b3 b5 b7.@@" data-i18n-tip="tipM7b5">i</span>
           </div>
 
           <div class="ringBtnRow rowStart">
@@ -3700,6 +3752,44 @@ function noteDisplay(str){
   return toUnicodeAccidentals(out);
 }
 
+// Выводит название ноты в элемент (SVG <text> или обычный HTML-элемент).
+// Буква минора "m" после названия ноты (и в ABC, и в до-ре-ми)
+// оформляется отдельно — меньше (75%), курсивом, чуть прозрачнее и чуть
+// ниже, через тонкий пробел: иначе жирная "m" сливалась с кириллицей
+// ("Лям", "Дом").
+// Размер/сдвиг/прозрачность "m" — в CSS-классе .minorMark и в
+// MINOR_MARK_SHIFT_EM ниже.
+const MINOR_MARK_SHIFT_EM = 0.12;   // сдвиг "m" вниз (в долях её размера)
+function setNoteText(elm, str){
+  if(!elm) return;
+  const text = noteDisplay(str);
+  const m = (typeof text === 'string')
+    ? text.match(/^([A-GА-Яа-яёЁ]+[♯♭]*)m(?!aj)(.*)$/) : null;
+  if(!m){ elm.textContent = text; return; }
+  const isSvg = elm.namespaceURI === 'http://www.w3.org/2000/svg';
+  elm.textContent = '';
+  elm.appendChild(document.createTextNode(m[1] + '\u2009'));
+  const mark = isSvg
+    ? document.createElementNS('http://www.w3.org/2000/svg', 'tspan')
+    : document.createElement('span');
+  mark.setAttribute('class', 'minorMark');
+  mark.textContent = 'm';
+  if(isSvg) mark.setAttribute('dy', MINOR_MARK_SHIFT_EM + 'em');
+  else mark.style.verticalAlign = '-' + MINOR_MARK_SHIFT_EM + 'em';
+  elm.appendChild(mark);
+  if(m[2]){
+    if(isSvg){
+      // остаток (напр. "7" в "m7") возвращаем на основную линию
+      const rest = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      rest.setAttribute('dy', (-MINOR_MARK_SHIFT_EM * 0.75) + 'em');
+      rest.textContent = m[2];
+      elm.appendChild(rest);
+    } else {
+      elm.appendChild(document.createTextNode(m[2]));
+    }
+  }
+}
+
 // Заменяет только знаки альтерации, не трогая обычные буквы:
 // '#' всегда является диезом, 'b' — только сразу после названия ноты
 // (латинской буквы, слогового названия или уже стоящего знака) либо
@@ -3719,11 +3809,11 @@ function refreshAllNoteNameDisplays(){
     const names = ringData[ring].names;
     for(let i=0;i<12;i++){
       const s1 = selectWedgeMap[ring+'-'+i];
-      if(s1) s1.label.textContent = noteDisplay(names[i]);
+      if(s1) setNoteText(s1.label, names[i]);
       const s2 = selectWedgeMapL2[ring+'-'+i];
-      if(s2) s2.label.textContent = noteDisplay(names[i]);
+      if(s2) setNoteText(s2.label, names[i]);
       const s3 = selectWedgeMap3[ring+'-'+i];
-      if(s3) s3.label.textContent = noteDisplay(names[i]);
+      if(s3) setNoteText(s3.label, names[i]);
       const t = trainWedgeMap[ring+'-'+i];
       if(t){
         // Ячейка-заменитель гарм./мелод. минора (см. raiseModeWedge): у неё
@@ -3733,10 +3823,10 @@ function refreshAllNoteNameDisplays(){
         // этом оставалась красной (см. баг с "дробью" тоже завязанной на
         // t.name — там дробь трогать не нужно, у заменителей её нет).
         if(t.accLabel) renderTrainAccLabel(t);
-        else t.label.textContent = noteDisplay(t.raisedLabelRaw || t.name);
+        else setNoteText(t.label, t.raisedLabelRaw || t.name);
         if(t.altBottomLabel){
           const altNoteName = (TRAIN_ALT_NOTE_MAP[ring] || {})[t.name];
-          if(altNoteName) t.altBottomLabel.textContent = noteDisplay(altNoteName);
+          if(altNoteName) setNoteText(t.altBottomLabel, altNoteName);
         }
       }
     }
@@ -3745,9 +3835,9 @@ function refreshAllNoteNameDisplays(){
   if(typeof updateTrainKeySig === 'function') updateTrainKeySig();
   if(typeof centerText !== 'undefined' && centerText){
     if(typeof practiceLevel !== 'undefined' && practiceLevel === 1 && typeof current !== 'undefined' && current){
-      centerText.textContent = noteDisplay(current.name);
+      setNoteText(centerText, current.name);
     } else if(typeof practiceLevel !== 'undefined' && practiceLevel === 3 && typeof currentL3 !== 'undefined' && currentL3){
-      centerText.textContent = noteDisplay(l3CenterDisplayName());
+      setNoteText(centerText, l3CenterDisplayName());
     }
   }
   if(typeof renderLevel3Hint === 'function') renderLevel3Hint();
@@ -3758,20 +3848,23 @@ function refreshAllNoteNameDisplays(){
 function setNoteNamingSystem(system){
   noteNamingSystem = system === 'solfege' ? 'solfege' : 'abc';
   localStorage.setItem(NOTE_NAMING_SYSTEM_KEY, noteNamingSystem);
-  const abcBtn = document.getElementById('noteNamingAbcBtn');
-  const solfegeBtn = document.getElementById('noteNamingSolfegeBtn');
-  if(abcBtn) abcBtn.classList.toggle('active', noteNamingSystem === 'abc');
-  if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
+  syncNoteNamingButtons();
   refreshAllNoteNameDisplays();
 }
 
+// Переключатель есть в 3 местах ("Обучение", "Ноты", "Аккорды/Лады") —
+// все копии показывают один и тот же выбор.
+function syncNoteNamingButtons(){
+  document.querySelectorAll('.noteNamingBtn[data-system]').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.system === noteNamingSystem);
+  });
+}
+
 (function initNoteNamingSwitch(){
-  const abcBtn = document.getElementById('noteNamingAbcBtn');
-  const solfegeBtn = document.getElementById('noteNamingSolfegeBtn');
-  if(abcBtn) abcBtn.addEventListener('click', ()=>setNoteNamingSystem('abc'));
-  if(solfegeBtn) solfegeBtn.addEventListener('click', ()=>setNoteNamingSystem('solfege'));
-  if(abcBtn) abcBtn.classList.toggle('active', noteNamingSystem === 'abc');
-  if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
+  document.querySelectorAll('.noteNamingBtn[data-system]').forEach(btn=>{
+    btn.addEventListener('click', ()=>setNoteNamingSystem(btn.dataset.system));
+  });
+  syncNoteNamingButtons();
 })();
 
 /* =========================================================
@@ -3968,6 +4061,10 @@ const I18N = {
   tip7b5: { ru:'7b5 = Мажор с пониженной 5-й ступенью + малая 7-я ступень - 1 3 b5 b7.', en:'7b5 = Major with flat 5th degree + minor 7th degree - 1 3 b5 b7.', zh:'7b5 = 大调降五度 + 小七度 - 1 3 b5 b7。' },
   tip7s5: { ru:'7#5 = Мажор с повышенной 5-й ступенью + малая 7-я ступень - 1 3 #5 b7.', en:'7#5 = Major with sharp 5th degree + minor 7th degree - 1 3 #5 b7.', zh:'7#5 = 大调升五度 + 小七度 - 1 3 #5 b7。' },
   tip7sus4: { ru:'7sus4 = Sus4 + малая 7-я ступень - 1 4 5 b7.', en:'7sus4 = Sus4 + minor 7th degree - 1 4 5 b7.', zh:'7sus4 = Sus4 + 小七度 - 1 4 5 b7。' },
+  tipDim: { ru:'Ступени уменьшённого трезвучия - @@1 b3 b5@@', en:'Diminished triad degrees - @@1 b3 b5@@', zh:'减三和弦级数 - @@1 b3 b5@@' },
+  tipAug: { ru:'Ступени увеличенного трезвучия - @@1 3 #5@@', en:'Augmented triad degrees - @@1 3 #5@@', zh:'增三和弦级数 - @@1 3 #5@@' },
+  tipDim7: { ru:'dim7 = Уменьшённое трезвучие + уменьшённая 7-я ступень - @@1 b3 b5 bb7.@@', en:'dim7 = Diminished triad + diminished 7th degree - @@1 b3 b5 bb7.@@', zh:'dim7 = 减三和弦 + 减七度 - @@1 b3 b5 bb7。@@' },
+  tipM7b5: { ru:'m7b5 = Минор с пониженной 5-й ступенью + малая 7-я ступень - @@1 b3 b5 b7.@@', en:'m7b5 = Minor with flat 5th degree + minor 7th degree - @@1 b3 b5 b7.@@', zh:'m7b5 = 小调降五度 + 小七度 - @@1 b3 b5 b7。@@' },
   tip69: { ru:'6/9 = Мажор + большая 6-я ступень + большая 9-я ступень - 1 3 5 6 9(2).', en:'6/9 = Major + major 6th degree + major 9th degree - 1 3 5 6 9(2).', zh:'6/9 = 大调 + 大六度 + 大九度 - 1 3 5 6 9(2)。' },
   tipAdd9: { ru:'add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).', en:'add9 = Major + major 9th degree - 1 3 5 9(2).', zh:'add9 = 大调 + 大九度 - 1 3 5 9(2)。' },
   tipMAdd9: { ru:'m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).', en:'m(add9) = Minor + major 9th degree - 1 b3 5 9(2).', zh:'m(add9) = 小调 + 大九度 - 1 b3 5 9(2)。' },
@@ -4012,6 +4109,7 @@ const DEGREE_LABEL_I18N = {
   6:  { ru:'Секста',    en:'Sixth',      zh:'六度' },
   'b5': { ru:'Пониженная квинта', en:'Flat fifth', zh:'降五度' },
   '#5': { ru:'Повышенная квинта', en:'Sharp fifth', zh:'升五度' },
+  'bb7': { ru:'Уменьшённая септима', en:'Diminished seventh', zh:'减七度' },
   7:  { ru:'Септима',   en:'Seventh',    zh:'七度' },
   9:  { ru:'Нона',      en:'Ninth',      zh:'九度' },
   11: { ru:'Ундецима',  en:'Eleventh',   zh:'十一度' },
@@ -4587,7 +4685,7 @@ function pickNewChord(){
   let idx = Math.floor(r / weight);
   if(idx >= pool.length) idx = pool.length - 1;
   current = pool[idx];
-  centerText.textContent = noteDisplay(current.name);
+  setNoteText(centerText, current.name);
 
   rootHistory.push(rootOf(current.name));
   if(rootHistory.length > 3) rootHistory.shift();
@@ -4693,7 +4791,7 @@ function buildSelectRing(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = noteDisplay(names[i]);
+    setNoteText(label, names[i]);
     label.style.pointerEvents = 'none';
     selectSvg.appendChild(label);
 
@@ -4792,7 +4890,7 @@ function buildSelectRingL2(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = noteDisplay(names[i]);
+    setNoteText(label, names[i]);
     label.style.pointerEvents = 'none';
     selectSvgL2.appendChild(label);
 
@@ -4891,7 +4989,7 @@ function buildSelectRing3(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = noteDisplay(names[i]);
+    setNoteText(label, names[i]);
     label.style.pointerEvents = 'none';
     selectSvg3.appendChild(label);
 
@@ -5062,7 +5160,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = noteDisplay(names[i]);
+    setNoteText(label, names[i]);
     label.style.pointerEvents = 'none';
     trainSvg.appendChild(label);
 
@@ -5091,7 +5189,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
       // сверху (там y — это baseline, а у наших нот нет "хвостов" вниз,
       // так что нижний край глифа практически совпадает с baseline).
       altBottomLabel.setAttribute('dominant-baseline', 'hanging');
-      altBottomLabel.textContent = noteDisplay(altNoteName);
+      setNoteText(altBottomLabel, altNoteName);
       altBottomLabel.style.fontSize = TRAIN_ALT_NOTE_FONT_SIZE + 'px';
       altBottomLabel.style.display = 'none';
       trainSvg.appendChild(altBottomLabel);
@@ -5547,6 +5645,9 @@ const TRAIN_CHORD_FORMULAS = {
   // 7b5, 7#5 (квинта понижена/повышена), 7sus4, 6/9
   dom7b5:[0,4,6,10], dom7s5:[0,4,8,10], dom7sus4:[0,5,7,10], six9:[0,4,7,9,14],
   add9:[0,4,7,14], madd9:[0,3,7,14],
+  // dim, aug, dim7, m7b5 (уменьшённая 7-я у dim7 = 9 полутонов: у C это
+  // Bbb, пишется как A — дубль-знаки в приложении не используются)
+  dim:[0,3,6], aug:[0,4,8], dim7:[0,3,6,9], m7b5:[0,3,6,10],
   dom9:[0,4,7,10,14], maj9:[0,4,7,11,14], m9:[0,3,7,10,14], mmaj9:[0,3,7,11,14],
   add11:[0,4,7,17], madd11:[0,3,7,17],
   dom11:[0,4,7,10,14,17], maj11:[0,4,7,11,14,17], m11:[0,3,7,10,14,17], mmaj11:[0,3,7,11,14,17],
@@ -5587,7 +5688,8 @@ function trainChordFormula(chordType, ring){
    буквой: #5 (8 полутонов) у 7#5 — это повышенная квинта (C7#5: G#, а
    не Ab). Ключ — тип аккорда, значение: интервал -> шаг по буквам. */
 const CHORD_LETTER_STEP_OVERRIDE = {
-  dom7s5: { 8: 4 }
+  dom7s5: { 8: 4 },
+  aug: { 8: 4 }
 };
 function chordLetterStepFor(chordType, iv){
   const o = CHORD_LETTER_STEP_OVERRIDE[chordType];
@@ -5743,6 +5845,10 @@ const TRAIN_CHORD_DEGREE_NAMES = {
   dom7s5: ['root','third','fifth','seventh'],
   dom7sus4: ['root','fourth','fifth','seventh'],
   six9:   ['root','third','fifth','sixth','ninth'],
+  dim:    ['root','third','fifth'],
+  aug:    ['root','third','fifth'],
+  dim7:   ['root','third','fifth','seventh'],
+  m7b5:   ['root','third','fifth','seventh'],
   add9:   ['root','third','fifth','ninth'],
   madd9:  ['root','third','fifth','ninth'],
   dom9:   ['root','third','fifth','seventh','ninth'],
@@ -6011,7 +6117,8 @@ function renderTrainPiano(notes, minBlocks){
 }
 
 const TRAIN_SHOW_PIANO_KEY = 'circleTrainShowPiano';
-let trainShowPiano = localStorage.getItem(TRAIN_SHOW_PIANO_KEY) === '1';
+// по умолчанию клавиатура включена (выключена, только если её сняли)
+let trainShowPiano = localStorage.getItem(TRAIN_SHOW_PIANO_KEY) !== '0';
 
 /* =========================================================
    ОБРАЩЕНИЯ АККОРДА на мини-клавиатуре "Обучения".
@@ -6835,7 +6942,8 @@ function onL3PianoKeyClick(key, keysTopY){
 }
 
 const L3_SHOW_PIANO_KEY = 'circleL3ShowPiano';
-let l3ShowPiano = localStorage.getItem(L3_SHOW_PIANO_KEY) === '1';
+// по умолчанию клавиатура включена (выключена, только если её сняли)
+let l3ShowPiano = localStorage.getItem(L3_SHOW_PIANO_KEY) !== '0';
 
 /* Настройка "Скрыть ячейки круга" (подпункт "Показывать клавиатуру",
    только вкладка "Аккорды/Лады") — при включении все 24 ячейки круга
@@ -7092,7 +7200,7 @@ function refreshNotesPairsGame(){
   if(appMode === 'practice' && practiceLevel === 2 && currentL2){
     if(notesPairsMode){
       clearWedgeHighlightL2(currentL2.ring, currentL2.index);
-      centerText.textContent = noteDisplay(currentL2.name);
+      setNoteText(centerText, currentL2.name);
     } else {
       centerText.textContent = '';
       setWedgeFillL2(currentL2.ring, currentL2.index, YELLOW_HIGHLIGHT_L2);
@@ -7534,7 +7642,14 @@ const EXT_CHORD_DEGREES = {
   dom7b5:   { fifth:1, third:4,  seventh:-2 },
   dom7s5:   { fifth:1, third:4,  seventh:-2 },
   dom7sus4: { fifth:1, fourth:-1, seventh:-2 },
-  six9:     { fifth:1, third:4,  sixth:3, ninth:2 }
+  six9:     { fifth:1, third:4,  sixth:3, ninth:2 },
+  // dim / aug / dim7 / m7b5: изменённая квинта — на ячейке квинты со
+  // знаком (как у 7b5/7#5, см. ALT_FIFTH_TYPES); уменьшённая септима dim7
+  // (у C — A) — по кругу на 3 шага от тоники
+  dim:      { fifth:1, third:-3 },
+  aug:      { fifth:1, third:4 },
+  dim7:     { fifth:1, third:-3, seventh:3 },
+  m7b5:     { fifth:1, third:-3, seventh:-2 }
 };
 const EXT_DEGREE_STYLE = {
   fifth:      { startPoint:'extP1', stubLength:40,  color:'var(--blue)'   },
@@ -8965,7 +9080,7 @@ const TRIAD_INVERSION_ARC_STUB_STEP = 20;  // каждая следующая д
    "С бемолями\\диезами", "Правильно", во вкладке "Аккорды/Лады".
    Значение — на сколько полутонов квинта изменена. Номер ноты в формуле
    аккорда — 2 (тоника, терция, квинта, септима). */
-const ALT_FIFTH_TYPES = { dom7b5: -1, dom7s5: 1 };
+const ALT_FIFTH_TYPES = { dom7b5: -1, dom7s5: 1, dim: -1, aug: 1, dim7: -1, m7b5: -1 };
 const ALT_FIFTH_NOTE_INDEX = 2;
 function altFifthCell(chordType, ring, tonicIndex){
   const alter = ALT_FIFTH_TYPES[chordType];
@@ -8994,7 +9109,8 @@ function applyTrainAltFifthLabel(chordType, ring, tonicIndex){
 }
 
 // ступень аккорда по интервалу формулы (в полутонах от тоники)
-function chordDegreeKeyOfInterval(iv){
+function chordDegreeKeyOfInterval(iv, chordType){
+  if(chordType === 'dim7' && iv === 9) return 'seventh';
   switch(iv){
     case 0: return 'root';
     case 2: return 'second';
@@ -9061,7 +9177,7 @@ function chordToneCells(chordType, ring, tonicIndex){
   const pcOf = c => (c.ring === 'minor' ? minorsSemitone : majorsSemitone)[c.idx];
   const altFifth = altFifthCell(chordType, tonic.ring, tonic.idx);
   return formula.map((iv, j)=>{
-    const degree = chordDegreeKeyOfInterval(iv);
+    const degree = chordDegreeKeyOfInterval(iv, chordType);
     if(iv === 0) return { ring: tonic.ring, idx: tonic.idx, degree };
     if(altFifth && j === ALT_FIFTH_NOTE_INDEX) return altFifth;
     const pc = ((tonicPc + iv) % 12 + 12) % 12;
@@ -9357,7 +9473,7 @@ function inversionPlanCells(plan, chordType, ring, tonicIndex){
     return plan.cells.map((c, i) => ({
       ring: c[0],
       idx: ((tonicIndex + c[1]) % 12 + 12) % 12,
-      degree: chordDegreeKeyOfInterval(formula[i])
+      degree: chordDegreeKeyOfInterval(formula[i], chordType)
     }));
   }
   const cells = chordToneCells(chordType, ring, tonicIndex);
@@ -9419,7 +9535,10 @@ function accCellDist(a, b){
    рисуются схемой "с бемолями\диезами" — и основной вид, и обращения:
      A мажор (тоника Am):  Am -> C♯ (ячейка C) -> Em
      C минор (тоника C):   C -> E♭ (ячейка Em) -> G                    */
-const ACC_TRIAD_TYPES = new Set(['triadMajX', 'triadMinX']);
+// dim / aug — так же, как Минор/Мажор на "чужом" кольце:
+//   C dim (тоника C): C -> E♭ (ячейка Em) -> G♭ (ячейка G)
+//   A aug (тоника Am): Am -> C♯ (ячейка C) -> E♯ (ячейка Em)
+const ACC_TRIAD_TYPES = new Set(['triadMajX', 'triadMinX', 'dim', 'aug']);
 const ACC_FORCED_CELLS = {
   'triadMajX|minor': { 1: ['major', 0], 2: ['minor', 1] },
   'triadMinX|major': { 1: ['minor', 1], 2: ['major', 1] },
@@ -9531,7 +9650,7 @@ function accChordCells(chordType, ring, tonicIndex, noForced){
     const cellPc = (p.ring === 'minor' ? minorsSemitone : majorsSemitone)[idx];
     return {
       ring: p.ring, idx,
-      degree: chordDegreeKeyOfInterval(formula[j]),
+      degree: chordDegreeKeyOfInterval(formula[j], chordType),
       alter: p.alter,
       letter: letters[j][0],
       sign: p.alter ? accSignFor(letters[j], p.alter) : '',
@@ -9561,7 +9680,7 @@ function clearTrainAccLabels(){
   if(!accLabeledTrainWedges) return;
   accLabeledTrainWedges.forEach(item=>{
     item.accLabel = null;
-    item.label.textContent = noteDisplay(item.raisedLabelRaw || item.name);
+    setNoteText(item.label, item.raisedLabelRaw || item.name);
   });
   accLabeledTrainWedges.length = 0;
 }
@@ -10017,7 +10136,7 @@ function getStepsForChordTypeL3(type, ring){
 
 // 7b5, 7#5, 7sus4, 6/9 — ноты считаются по формуле (настоящая высота:
 // у C7b5 это Gb, хотя на круге она стоит на ячейке G со знаком)
-const L3_LETTERS_BY_FORMULA_TYPES = new Set(['dom7b5', 'dom7s5', 'dom7sus4', 'six9']);
+const L3_LETTERS_BY_FORMULA_TYPES = new Set(['dom7b5', 'dom7s5', 'dom7sus4', 'six9', 'dim', 'aug', 'dim7', 'm7b5']);
 function getChordNoteLettersL3(ring, tonicIndex, type){
   if(L3_LETTERS_BY_FORMULA_TYPES.has(type)){
     const tonicPc = (ring === 'minor' ? minorsSemitone : majorsSemitone)[tonicIndex];
@@ -10050,6 +10169,10 @@ function chordTypeSuffixL3(type){
     case 'dom7b5': return '7b5';
     case 'dom7s5': return '7#5';
     case 'dom7sus4': return '7sus4';
+    case 'dim': return 'dim';
+    case 'aug': return 'aug';
+    case 'dim7': return 'dim7';
+    case 'm7b5': return 'm7b5';
     case 'add9': return 'add9';
     case 'madd9': return 'm(add9)';
     case 'dom9': return '9';
@@ -10435,7 +10558,7 @@ function pickNewChordL3(){
     accAliases: l3AltFifthAliases(chosen.ring, chosen.index, chordType,
       !l3NameMode ? getChordAccAliasesL3(chosen.ring, chosen.index, chordType, inversionL3) : null)
   };
-  if(practiceLevel === 3) centerText.textContent = noteDisplay(l3CenterDisplayName());
+  if(practiceLevel === 3) setNoteText(centerText, l3CenterDisplayName());
   updateL3CenterModeLabel();
   renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -10646,7 +10769,7 @@ function pickNewModeL3(){
     rootLetter: rootLetter,
     found: new Set()
   };
-  if(practiceLevel === 3) centerText.textContent = noteDisplay(l3CenterDisplayName());
+  if(practiceLevel === 3) setNoteText(centerText, l3CenterDisplayName());
   updateL3CenterModeLabel();
   renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -11394,7 +11517,7 @@ function renderLevel3Hint(){
         const r = ring === 'major' ? LEVEL3_HINT_RADIUS_MAJOR : LEVEL3_HINT_RADIUS_MINOR;
         const p = polar(CX, CY, r, idx * 30);
         const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
-        t.textContent = noteDisplay(text);
+        setNoteText(t, text);
         t.style.fill = TRAIN_REAL_MODE_NOTE_COLOR;
         level3HintLayer.appendChild(t);
       });
@@ -11410,13 +11533,13 @@ function renderLevel3Hint(){
       // "A♭"), а не канонический sharp-вариант из rootOf() (напр. "G♯") —
       // иначе на мажорном кругу появляются диезы, которых там нет
       // (см. правку бага с G♯/D♯ на мажорном кругу).
-      t.textContent = noteDisplay(majors[majorIdx]);
+      setNoteText(t, majors[majorIdx]);
       level3HintLayer.appendChild(t);
     }
     if(minorIdx !== -1){
       const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MINOR, minorIdx * 30);
       const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
-      t.textContent = noteDisplay(minors[minorIdx].replace(/m$/, ''));
+      setNoteText(t, minors[minorIdx].replace(/m$/, ''));
       level3HintLayer.appendChild(t);
     }
   });
@@ -11505,7 +11628,7 @@ function pickNewChordL2(){
     setWedgeFillL2(currentL2.ring, currentL2.index, YELLOW_HIGHLIGHT_L2);
   }
   if(practiceLevel === 2){
-    centerText.textContent = notesPairsMode ? noteDisplay(currentL2.name) : '';
+    setNoteText(centerText, notesPairsMode ? currentL2.name : '');
   }
 
   rootHistoryL2.push(rootOf(currentL2.name));
@@ -11767,9 +11890,41 @@ const SIX9_HIGHLIGHTS_MAJOR = {
   sixth: { degreeSteps: 3, ring:'major', color: resolveColor(8) /* lime */ },
   ninth: { degreeSteps: 2, ring:'major', color: resolveColor(5) /* cyan */ }
 };
+// aug с тоникой на мажорном кольце: C -> G♯ (ячейка G), E (ячейка Em)
+const AUG_HIGHLIGHTS_MAJOR = {
+  fifth: { degreeSteps: 1, ring:'major', color: resolveColor(4) /* blue */ },
+  third: { degreeSteps: 1, ring:'minor', color: resolveColor(3) /* yellow */ }
+};
+// dim7 с тоникой на мажорном кольце: C -> E♭, G♭ (ячейка G), A (ячейка Am)
+const DIM7_HIGHLIGHTS_MAJOR = {
+  fifth:   { degreeSteps: 1,  ring:'major', color: resolveColor(4) },
+  third:   { degreeSteps: -3, ring:'major', color: resolveColor(3) },
+  seventh: { degreeSteps: 0,  ring:'minor', color: resolveColor(7) }
+};
+// dim / m7b5 / dim7 с тоникой на минорном кольце (Am): терция — C над Am,
+// квинта — E♭ на ячейке Em, септима — G (m7b5) / F♯m (dim7)
+const DIM_HIGHLIGHTS_MINOR = {
+  dim: {
+    fifth: { degreeSteps: 1, ring:'minor', color: resolveColor(4) },
+    third: { degreeSteps: 0, ring:'major', color: resolveColor(3) }
+  },
+  m7b5: {
+    fifth:   { degreeSteps: 1, ring:'minor', color: resolveColor(4) },
+    third:   { degreeSteps: 0, ring:'major', color: resolveColor(3) },
+    seventh: { degreeSteps: 1, ring:'major', color: resolveColor(7) }
+  },
+  dim7: {
+    fifth:   { degreeSteps: 1, ring:'minor', color: resolveColor(4) },
+    third:   { degreeSteps: 0, ring:'major', color: resolveColor(3) },
+    seventh: { degreeSteps: 3, ring:'minor', color: resolveColor(7) }
+  }
+};
 // 7b5 / 7#5: квинта в легенде — пониженная / повышенная
 CHORD_LEGEND_DEGREES.dom7b5.forEach(d=>{ if(d.degree === 5) d.label = 'b5'; });
 CHORD_LEGEND_DEGREES.dom7s5.forEach(d=>{ if(d.degree === 5) d.label = '#5'; });
+['dim', 'dim7', 'm7b5'].forEach(t => CHORD_LEGEND_DEGREES[t].forEach(d=>{ if(d.degree === 5) d.label = 'b5'; }));
+CHORD_LEGEND_DEGREES.aug.forEach(d=>{ if(d.degree === 5) d.label = '#5'; });
+CHORD_LEGEND_DEGREES.dim7.forEach(d=>{ if(d.degree === 7) d.label = 'bb7'; });
 const trainLegendEl = document.getElementById('trainLegend');
 
 /* Галка "Показать ступени аккорда" — включает/выключает легенду цветов
@@ -12039,7 +12194,7 @@ function applyTrainRealModeNotes(ring, tonicIndex, cfg){
     const shown = item.raisedLabelRaw || item.name.replace(/m$/, '');
     if(asciiAccidentals(shown) === asciiAccidentals(real)) continue;
     item.raisedLabelRaw = real;
-    item.label.textContent = noteDisplay(real);
+    setNoteText(item.label, real);
     item.label.style.fill = TRAIN_REAL_MODE_NOTE_COLOR;
     if(!raisedTrainWedges.includes(item)) raisedTrainWedges.push(item);
   }
@@ -12064,7 +12219,7 @@ function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
   // после переключения системы названий подпись откатывалась на родную
   // ноту, хотя ячейка при этом оставалась красной).
   item.raisedLabelRaw = spelled.text;
-  item.label.textContent = noteDisplay(spelled.text);
+  setNoteText(item.label, spelled.text);
   raisedTrainWedges.push(item);
 }
 
@@ -12073,7 +12228,7 @@ function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
 function unraiseTrainWedges(){
   raisedTrainWedges.forEach(item => {
     item.raisedLabelRaw = null;
-    item.label.textContent = noteDisplay(item.name);
+    setNoteText(item.label, item.name);
     item.label.style.fill = '';
   });
   raisedTrainWedges.length = 0;
@@ -12124,8 +12279,15 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
   // 7b5 / 7#5 на мажорном кольце — те же ячейки, что у 7 (C -> G -> Em ->
   // B♭), квинта — ячейка G (со знаком ♭/♯, см. applyTrainAltFifthLabel);
   // 6/9 — терция на Em, как у add9 (C, G, Em, A, D)
-  if(ring !== 'minor' && ALT_FIFTH_TYPES[chordType]) highlightsCfg = SUS_CONFIGS.dom7.highlights2;
+  if(ring !== 'minor' && (chordType === 'dom7b5' || chordType === 'dom7s5')) highlightsCfg = SUS_CONFIGS.dom7.highlights2;
   if(ring !== 'minor' && chordType === 'six9') highlightsCfg = SIX9_HIGHLIGHTS_MAJOR;
+  // aug на мажорном кольце — как мажорное трезвучие: C -> G♯ (ячейка G), Em
+  if(ring !== 'minor' && chordType === 'aug') highlightsCfg = AUG_HIGHLIGHTS_MAJOR;
+  // dim7 на мажорном кольце: уменьшённая септима (у C — A) — ячейка Am под C
+  if(ring !== 'minor' && chordType === 'dim7') highlightsCfg = DIM7_HIGHLIGHTS_MAJOR;
+  // dim / m7b5 / dim7 на минорном кольце — как m7: Am -> C, E♭ (ячейка Em),
+  // G (m7b5) / F♯m (dim7)
+  if(ring === 'minor' && DIM_HIGHLIGHTS_MINOR[chordType]) highlightsCfg = DIM_HIGHLIGHTS_MINOR[chordType];
   if(!highlightsCfg) return; // нет Варианта 2 для этого аккорда (напр. madd9)
 
   const angleIndex = ring === 'minor' ? tonicIndex : tonicFifthsIndex(ring, tonicIndex);
@@ -12386,6 +12548,7 @@ let trainChordType = localStorage.getItem(TRAIN_CHORD_TYPE_KEY);
 const VALID_TRAIN_CHORD_TYPES = new Set([
   'triadMaj','triadMin',
   'sus2','sus4','dom7','maj7','min7','mmaj7','dom7b5','dom7s5','dom7sus4','add9','madd9',
+  'dim','aug','dim7','m7b5',
   'dom9','maj9','m9','mmaj9','six9','add11','madd11','dom11','maj11','m11','mmaj11','dom13','maj13','m13','mmaj13'
 ]);
 if(!VALID_TRAIN_CHORD_TYPES.has(trainChordType)) trainChordType = 'triadMaj';
@@ -12700,7 +12863,12 @@ const NEW_TRAIN_CHORD_BTNS = [
   ['dom7b5',   document.getElementById('trainDom7b5Btn')],
   ['dom7s5',   document.getElementById('trainDom7s5Btn')],
   ['dom7sus4', document.getElementById('trainDom7Sus4Btn')],
-  ['six9',     document.getElementById('trainSix9Btn')]
+  ['six9',     document.getElementById('trainSix9Btn')],
+  // dim, aug, dim7, m7b5
+  ['dim',      document.getElementById('trainDimBtn')],
+  ['aug',      document.getElementById('trainAugBtn')],
+  ['dim7',     document.getElementById('trainDim7Btn')],
+  ['m7b5',     document.getElementById('trainM7b5Btn')]
 ];
 
 function applyTrainChordType(){
@@ -13036,7 +13204,7 @@ function drawTrainKeySigLine(type, n, r){
       'font-size':TRAIN_KEYSIG_NOTE_FONT_SIZE, 'font-weight':'bold'
     }, trainKeySigLayer);
     t.style.fontFamily = 'var(--font)';
-    t.textContent = noteDisplay(names[j]);
+    setNoteText(t, names[j]);
     keySigPlaceOut(t, r + TRAIN_KEYSIG_NOTE_GAP, a);
   }
 }
@@ -13227,11 +13395,11 @@ function applyPracticeLevel(){
   }
 
   if(practiceLevel === 1){
-    centerText.textContent = current ? noteDisplay(current.name) : '';
+    setNoteText(centerText, current ? current.name : '');
   } else if(practiceLevel === 3){
-    centerText.textContent = currentL3 ? noteDisplay(l3CenterDisplayName()) : '';
+    setNoteText(centerText, currentL3 ? l3CenterDisplayName() : '');
   } else if(practiceLevel === 2 && notesPairsMode){
-    centerText.textContent = currentL2 ? noteDisplay(currentL2.name) : '';
+    setNoteText(centerText, currentL2 ? currentL2.name : '');
   } else {
     centerText.textContent = '';
   }
@@ -14693,6 +14861,19 @@ function getL3DegreePositions(ring, tonicIndex, type){
       positions.push({ring, index: ((tonicIndex - 1) % 12 + 12) % 12});
       return positions;
     }
+    if(type === 'aug'){
+      // как мажорное трезвучие: G♯ — ячейка G, терция — Em
+      positions.push({ring, index: fifthIndex});
+      positions.push({ring: otherRing, index: fifthIndex});
+      return positions;
+    }
+    if(type === 'dim7'){
+      // C -> E♭, G♭ (ячейка G), A — ячейка Am под C
+      positions.push({ring, index: fifthIndex});
+      positions.push({ring, index: ((tonicIndex - 3) % 12 + 12) % 12});
+      positions.push({ring: otherRing, index: tonicIndex});
+      return positions;
+    }
     if(type === 'add9'){
       // Вариант 1 (буквенная, C -> G -> Em -> D): терция — на минорном
       // кольце (та же ячейка, что и квинта), нона — как и в числовой
@@ -15274,10 +15455,11 @@ const DAW_OUT_VELOCITY_KEY = 'circleOfFifths_dawOutVelocity_v1';
 const DAW_OUT_FORMAT_KEY = 'circleOfFifths_dawOutFormat_v1'; // '127' | '65536'
 const DAW_OUT_PORT_KEY = 'circleOfFifths_dawOutPort_v1'; // имя выбранного MIDI-выхода
 
-let dawOutMode = 'off';
+// по умолчанию "Сыграть за раз"; из двух кнопок всегда выбрана ровно одна
+let dawOutMode = 'together';
 try{
   const savedMode = localStorage.getItem(DAW_OUT_MODE_KEY);
-  if(savedMode === 'together' || savedMode === 'sequence') dawOutMode = savedMode;
+  if(savedMode === 'sequence') dawOutMode = savedMode;
 }catch(e){}
 
 const dawIntervalInput = document.getElementById('dawIntervalInput');
@@ -15417,7 +15599,8 @@ function applyDawOutModeButtons(){
 applyDawOutModeButtons();
 function setDawOutMode(mode){
   if(typeof clearDawTimers === 'function') clearDawTimers();
-  dawOutMode = (dawOutMode === mode) ? 'off' : mode; // повторный клик выключает
+  if(mode !== 'together' && mode !== 'sequence') return;
+  dawOutMode = mode; // повторный клик не выключает — одна кнопка нажата всегда
   applyDawOutModeButtons();
   try{ localStorage.setItem(DAW_OUT_MODE_KEY, dawOutMode); }catch(e){}
 }
@@ -15465,8 +15648,11 @@ try{
 }catch(e){}
 
 function applySoundOutModeUi(){
-  document.querySelectorAll('.soundOutBox').forEach(box => box.setAttribute('data-sound', soundOutMode));
-  document.querySelectorAll('.soundOutModeBtn').forEach(b => b.classList.toggle('active', b.getAttribute('data-soundout') === soundOutMode));
+  // во вкладке "Ноты" кнопки "DAW" нет: если DAW выбран в другой вкладке,
+  // там подсвечивается "Без звука" (нота вопроса в "Нотах" не играется)
+  const modeFor = el => (soundOutMode === 'daw' && el.closest('.notesSoundOutBox')) ? 'mute' : soundOutMode;
+  document.querySelectorAll('.soundOutBox').forEach(box => box.setAttribute('data-sound', modeFor(box)));
+  document.querySelectorAll('.soundOutModeBtn').forEach(b => b.classList.toggle('active', b.getAttribute('data-soundout') === modeFor(b)));
 }
 function setSoundOutMode(mode){
   if(mode !== 'mute' && mode !== 'online' && mode !== 'daw') return;
@@ -15678,6 +15864,8 @@ async function playNotesOnline(notes){
 function playPracticeQuestionSound(level){
   try{
     if(soundOutMode === 'mute') return;
+    // во вкладке "Ноты" нет вывода в DAW
+    if((level === 1 || level === 2) && soundOutMode === 'daw') return;
     if(appMode !== 'practice' || practiceLevel !== level) return;
     let notes = null;
     if(level === 1 || level === 2){
@@ -16130,7 +16318,8 @@ const CHORD_HOTKEY_TRAIN_BTN_ID = {
   madd11:'trainMAdd11Btn', maj11:'trainMaj11Btn', m11:'trainM11Btn',
   mmaj11:'trainMMaj11Btn', dom13:'trainDom13Btn',
   maj13:'trainMaj13Btn', m13:'trainM13Btn', mmaj13:'trainMMaj13Btn',
-  dom7b5:'trainDom7b5Btn', dom7s5:'trainDom7s5Btn', dom7sus4:'trainDom7Sus4Btn', six9:'trainSix9Btn'
+  dom7b5:'trainDom7b5Btn', dom7s5:'trainDom7s5Btn', dom7sus4:'trainDom7Sus4Btn', six9:'trainSix9Btn',
+  dim:'trainDimBtn', aug:'trainAugBtn', dim7:'trainDim7Btn', m7b5:'trainM7b5Btn'
 };
 const CHORD_HOTKEY_LEVEL3_BTN_ID = {
   triadMaj:'level3MajorBtn', triadMin:'level3MinorBtn', sus2:'level3Sus2Btn', sus4:'level3Sus4Btn',
@@ -16141,7 +16330,8 @@ const CHORD_HOTKEY_LEVEL3_BTN_ID = {
   madd11:'level3MAdd11Btn', maj11:'level3Maj11Btn', m11:'level3M11Btn',
   mmaj11:'level3MMaj11Btn', dom13:'level3Dom13Btn',
   maj13:'level3Maj13Btn', m13:'level3M13Btn', mmaj13:'level3MMaj13Btn',
-  dom7b5:'level3Dom7b5Btn', dom7s5:'level3Dom7s5Btn', dom7sus4:'level3Dom7Sus4Btn', six9:'level3Six9Btn'
+  dom7b5:'level3Dom7b5Btn', dom7s5:'level3Dom7s5Btn', dom7sus4:'level3Dom7Sus4Btn', six9:'level3Six9Btn',
+  dim:'level3DimBtn', aug:'level3AugBtn', dim7:'level3Dim7Btn', m7b5:'level3M7b5Btn'
 };
 
 // цифровая клавиша '1'..'9','0' -> позиция 0..9 внутри "страницы" (первой
