@@ -10,6 +10,12 @@
 
 Приложение для заучивания и проверки выученного кварто-квинтового круга, аккордов на нем и тональностей, а затем проверка ваших знаний
 
+Выберите в настройках 3 ноты и тренируйтесь, пока не выучите их идеально.
+Затем добавьте ещё 2–3 ноты и выучите эти 5–6 нот.
+Потом добавьте ещё 2–3 ноты и выучите 8–9 нот.
+Продолжайте, пока не выучите все ноты.
+Лучше учить всего 2–3 новые ноты в день, чем пытаться запомнить всё сразу. Мозгу нужно время, чтобы за ночь усвоить новую информацию.
+
 #### 1. Какие есть функции у приложения
 
 Приложение состоит из **трёх вкладок** вверху экрана:
@@ -103,6 +109,12 @@
 
 An app for learning and testing the circle of fifths, the chords built on it, and keys, with a knowledge check mode.
 
+Select 3 notes in the settings and practice them until you know them perfectly.
+Then add 2–3 more notes and learn those 5–6 notes.
+Then add another 2–3 notes and learn 8–9 notes.
+Keep going until you've learned all the notes.
+It's better to learn only 2–3 new notes per day than to try to memorize everything at once. Your brain needs time to process new information overnight.
+
 #### 1. App features
 
 The app has **three tabs** at the top of the screen:
@@ -195,6 +207,12 @@ Each of the five color themes (Dark, Gray-Yellow, Black-Orange, Dark Blue, Light
 ### 五度圈
 
 一款用于记忆和检验五度圈、圈上和弦及调性的应用，并附带知识检测功能。
+
+在设置中选择 3 个音符，反复练习，直到完全掌握。
+然后再添加 2–3 个音符，学会这 5–6 个音符。
+接着再添加 2–3 个音符，学会 8–9 个音符。
+如此继续，直到学会所有音符。
+每天只学 2–3 个新音符，比试图一次记住所有内容更好。大脑需要时间在夜间消化新信息。
 
 #### 1. 应用功能
 
