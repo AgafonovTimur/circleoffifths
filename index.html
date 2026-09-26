@@ -3170,6 +3170,17 @@
           </div>
           <div class="soundTimbreHint" data-i18n="soundTimbreHint">Сэмплы загружаются из сети при выборе сторонних тембров.</div>
         </div>
+        <!-- Копия полей "Интервал между нотами" и "Velocity" из "Обучения"
+             (видны только при DAW). Значения общие: правка здесь сразу
+             меняет поле в "Обучении" и наоборот (см. syncDawFieldCopies в <script>). -->
+        <div class="dawOutFieldRow dawOnly">
+          <label data-i18n="dawIntervalLabel">Интервал между нотами (сек):</label>
+          <input type="text" id="l3DawIntervalInput" class="dawIntervalCopy" inputmode="decimal" value="1">
+        </div>
+        <div class="dawOutFieldRow dawOnly">
+          <label>Velocity:</label>
+          <input type="text" id="l3DawVelocityInput" class="dawVelocityCopy" inputmode="numeric" value="100">
+        </div>
           </div>
       </div>
     </div>
@@ -3513,11 +3524,6 @@
           <label>Velocity:</label>
           <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
         </div>
-        <div class="dawOutFormatBlock noteNamingSwitchRow dawOnly" id="dawVelocityFormatSwitchRow">
-          <div class="dawOutTitle" data-i18n="dawFormatTitle">Формат выхода:</div>
-          <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">MIDI 1 (1-127)</button>
-          <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">MIDI 2(1-65536)</button>
-        </div>
 
         <label class="dawOutFieldRow dawSplitToggleRow dawOnly" for="dawSplitChannelsCheckbox">
           <input type="checkbox" id="dawSplitChannelsCheckbox">
@@ -3643,6 +3649,9 @@ MIDI
    должны идти раньше любого исполняемого кода, который их читает.
    ========================================================= */
 const ZOOM_MIN = 100;
+// На телефоне круг можно уменьшать меньше 100% (касание 4 пальцами),
+// напр. чтобы освободить место кнопкам ответов "Назови аккорд/лад".
+const ZOOM_MIN_MOBILE = 30;
 const ZOOM_MAX = 1000;
 const ZOOM_STEP = 10;
 const ZOOM_PRACTICE_STORAGE_KEY = 'circleOfFifthsZoomPractice';
@@ -5832,10 +5841,20 @@ function trainModeLettersFor(noteRaw, modeId){
      дубль-знака не выходит — от её энгармонического двойника
      (C♯ лидийский -> D♭ лидийский: Db Eb F G Ab Bb C). Ноты по высоте
      те же, зато запись читаемая — так и принято в теории. */
+  /* Из допустимых написаний (без дубль-знаков) берётся то, где меньше
+     всего знаков альтерации — так принято в теории: D♭ мажор (5 бемолей)
+     вместо C♯ мажора (7 диезов), C♯ дорийский (5 диезов) вместо D♭
+     дорийского (7 бемолей). Так ноты лада всегда совпадают с числом
+     ключевых знаков у тоники (trainKeySigCounts). При равенстве (F♯ / G♭ —
+     по 6 знаков) остаётся написание самой тоники. */
+  let best = null, bestCount = Infinity;
   for(const root of enharmonicTonicSpellings(noteRaw)){
     const spelled = cfg.formula.map((iv, i) => spellTrainIntervalStrict(root, iv, i));
-    if(spelled.every(s => Math.abs(s.alter) <= 1)) return spelled.map(s => s.text);
+    if(!spelled.every(s => Math.abs(s.alter) <= 1)) continue;
+    const count = spelled.reduce((sum, s) => sum + Math.abs(s.alter), 0);
+    if(count < bestCount){ best = spelled; bestCount = count; }
   }
+  if(best) return best.map(s => s.text);
   // теоретически недостижимо (проверено для всех 12 тоник × 7 ладов на
   // обоих кольцах), но на всякий случай — прежнее поведение
   return cfg.formula.map((iv, i) => spellTrainInterval(noteRaw, iv, i));
@@ -9363,9 +9382,9 @@ const EASY_TRIAD_BASED_TYPES = new Set([
      A7 (Am, минор. круг) 2-е, удобно:          Em-Gm-Am-C#m
      Cmaj7 (мажор. круг) 2-е, удобно:           G-C-Em-Bm
      Cadd9 (мажор. круг) 2-е, удобно:           G-C-Em-D
-     A add9 (Am, минор. круг) 3-е, оба:         Bm-A-C#m-E
+     A add9 (Am, минор. круг) 3-е, оба:         Bm-Am-C#m-Em
      Am(add9) (Am, минор. круг) основной, оба:  Am-C-Em-Bm
-     Am(add9) (Am, минор. круг) 1-е, оба:       C-Em-Bm-A */
+     Am(add9) (Am, минор. круг) 1-е, оба:       C-Em-Bm-Am */
 const INV_SPECIAL_PLANS = {
   /* A7 (тоника на минорном кольце, напр. Am): септима — ячейка G на
      МАЖОРНОМ кольце (прямо над Em), а не Gm на минорном.
@@ -9381,13 +9400,16 @@ const INV_SPECIAL_PLANS = {
   'maj7|major|1':  { easy:true, order:[1,2,0,3], arrows:[[1,2],[2,0],[1,3]], cells:[['major',0],['minor',1],['major',1],['minor',2]] },
   'maj7|major|2':  { easy:true,               order:[2,0,1,3], cells:[['major',0],['minor',1],['major',1],['minor',2]] },
   'add9|major|2':  { easy:true,               order:[2,0,1,3], cells:[['major',0],['minor',1],['major',1],['major',2]] },
-  'add9|minor|3':  { easy:true, correct:true, order:[3,0,1,2], cells:[['major',3],['minor',4],['major',4],['minor',2]] },
+  // тоника — на нажатой ячейке (Am), а не на A внешнего кольца (изменено с согласия пользователя)
+  // квинта — Em на минорном кольце: Bm → Am → C♯m → Em (по просьбе пользователя)
+  'add9|minor|3':  { easy:true, correct:true, order:[3,0,1,2], cells:[['minor',0],['minor',4],['minor',1],['minor',2]] },
   // Am(add9) основной: в "удобно" — Am-C и Am-Em-Bm (arrowsEasy), в
   // "правильно" остаётся строгая цепочка по порядку нот (Am-C-Em-Bm)
   'madd9|minor|0': { easy:true, correct:true, order:[0,1,2,3], arrowsEasy:[[0,1],[0,2],[2,3]], cells:[['minor',0],['major',0],['minor',1],['minor',2]] },
-  /* Am(add9) 1-е: в "правильно" — C-Em-Bm-A (без изменений); в "удобно"
+  /* Am(add9) 1-е: в "правильно" — C-Em-Bm-Am; в "удобно"
      (easyPlan, по просьбе пользователя) — C-Em-Am, Em-Bm */
-  'madd9|minor|1': { correct:true, order:[1,2,3,0], cells:[['major',3],['major',0],['minor',1],['minor',2]],
+  // тоника — на нажатой ячейке (Am), а не на A внешнего кольца (изменено с согласия пользователя)
+  'madd9|minor|1': { correct:true, order:[1,2,3,0], cells:[['minor',0],['major',0],['minor',1],['minor',2]],
                      easyPlan:{ order:[1,2,0,3], arrows:[[1,2],[2,0],[2,3]], cells:[['minor',0],['major',0],['minor',1],['minor',2]] } },
   // Am(add9) 2-е, удобно: Em-Am-C, Em-Bm
   'madd9|minor|2': { easy:true, order:[2,0,1,3], arrows:[[2,0],[0,1],[2,3]], cells:[['minor',0],['major',0],['minor',1],['minor',2]] },
@@ -11334,16 +11356,28 @@ const L3_NAME_ANSWERS_GAP = 14;
      при этом сдвигается влево, чтобы круг и кнопки вместе стояли по центру
      экрана и кнопкам хватало места (inner.style.translate).
    Число колонок подбирается под свободное место (от 1 до 6), чтобы кнопки
-   были как можно крупнее. Если даже так кнопки получаются мельче
-   L3_NAME_MOBILE_MIN_SCALE (выбрано много типов), в вертикальном положении
-   круг уменьшается и поднимается ровно на недостающую высоту
-   (l3NameMobileShrink, см. circleFitScale и --mobile-extra-shift в CSS). */
+   были как можно крупнее. Сам круг при этом не уменьшается; уменьшить его
+   можно касанием 4 пальцами — тогда в вертикальном положении он
+   поднимается, а клавиатура и кнопки подтягиваются вверх
+   (l3NameMobileShrink, см. l3NameZoomReflow, circleFitScale и
+   --mobile-extra-shift в CSS). */
 const L3_NAME_MOBILE_MARGIN = 6;       // px, отступ кнопок от краёв экрана
 const L3_NAME_MOBILE_MIN_SCALE = 0.7;  // меньше этого кнопки уже неудобно нажимать пальцем
 const L3_NAME_MOBILE_MAX_COLS = 6;
 const L3_NAME_MOBILE_MIN_CIRCLE = 0.5; // круг уменьшается максимум вдвое
 var l3NameMobileShrink = 0;            // px, на сколько уменьшен круг
 var __l3NameRelayoutBusy = false;
+
+/* "Назови аккорд/лад" на телефоне (вертикально): уменьшение круга
+   касанием 4 пальцами (зум меньше 100%) делается не простым масштабом, а
+   через l3NameMobileShrink — круг уменьшается и поднимается, клавиатура и
+   кнопки ответов подтягиваются вверх и получают освободившееся место. */
+function l3NameZoomReflow(){
+  try{
+    return document.body.classList.contains('is-mobile') && appMode === 'practice'
+      && practiceLevel === 3 && l3NameMode && window.innerHeight >= window.innerWidth;
+  }catch(e){ return false; }
+}
 
 function setL3NameMobileShrink(px){
   px = Math.max(0, Math.round(px));
@@ -11406,7 +11440,9 @@ function layoutL3NameAnswersMobile(box, inner){
   const lifted = document.body.classList.contains('mobile-piano-on');
   const innerTop = wr.top + inner.offsetTop - (lifted ? (15*cssVhPx() + l3NameMobileShrink/2) : 0);
   const innerLeft0 = wr.left + inner.offsetLeft;   // без сдвига влево
-  const zoom = (typeof zoomPractice === 'number' && !isNaN(zoomPractice)) ? zoomPractice : 100;
+  const zoomRaw = (typeof zoomPractice === 'number' && !isNaN(zoomPractice)) ? zoomPractice : 100;
+  // зум меньше 100% в вертикальном положении уже учтён в размере круга (см. l3NameZoomReflow)
+  const zoom = (portrait && zoomRaw < 100) ? 100 : zoomRaw;
   const circleSize = innerSize * zoom / 100;
   let blockBottom = innerTop + innerSize/2 + circleSize/2;    // низ круга
   let blockLeft   = innerLeft0 + innerSize/2 - circleSize/2;  // левый край круга
@@ -11445,27 +11481,14 @@ function layoutL3NameAnswersMobile(box, inner){
   const availW = Math.max(40, region.right - region.left);
   const availH = Math.max(20, region.bottom - region.top);
 
-  // Вертикальное положение: не хватает высоты — уменьшаем круг
-  if(portrait){
-    // самый крупный масштаб, который вообще позволяет ширина экрана
-    const maxByWidth = Math.min(1, availW / bw);
-    const target = Math.min(L3_NAME_MOBILE_MIN_SCALE, maxByWidth);
-    // при целевом масштабе — наибольшее число колонок, влезающее по ширине
-    let c = 1;
-    for(let k = Math.min(n, L3_NAME_MOBILE_MAX_COLS); k >= 1; k--){
-      if((k*bw + (k-1)*gap) * target <= availW){ c = k; break; }
-    }
-    const rows = Math.ceil(n / c);
-    const needH = (rows*bh + (rows-1)*gap) * target;
-    const deficit = needH - availH;               // >0 — не хватает, <0 — лишнее место
-    const fullCircle = innerSize + l3NameMobileShrink;  // размер круга без уменьшения
-    const maxShrink = fullCircle * (1 - L3_NAME_MOBILE_MIN_CIRCLE);
-    let want = l3NameMobileShrink;
-    if(pick.s < target - 0.01 && deficit > 1) want = Math.min(maxShrink, l3NameMobileShrink + deficit);
-    else if(deficit < -1) want = Math.max(0, l3NameMobileShrink + deficit);
-    if(!__l3NameRelayoutBusy && setL3NameMobileShrink(want)) return; // раскладка пересчитана заново
-  } else if(l3NameMobileShrink){
-    if(!__l3NameRelayoutBusy && setL3NameMobileShrink(0)) return;
+  // Круг в этом режиме сам больше не уменьшается (по просьбе
+  // пользователя): размер круга — как в обычном режиме. Если места мало,
+  // его уменьшают касанием 4 пальцами (зум меньше 100%) — круг
+  // поднимается, клавиатура и кнопки подтягиваются вверх.
+  {
+    const fullCircle = innerSize + l3NameMobileShrink;   // размер круга при 100%
+    const want = (portrait && zoomRaw < 100) ? fullCircle * (1 - zoomRaw / 100) : 0;
+    if(Math.abs(want - l3NameMobileShrink) > 0.5 && !__l3NameRelayoutBusy && setL3NameMobileShrink(want)) return;
   }
 
   box.style.gridTemplateColumns = 'repeat(' + pick.c + ', var(--l3-name-btn-width))';
@@ -14525,15 +14548,18 @@ function updateCircleFitBox(){
 }
 
 function applyZoom(){
-  zoomPractice = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomPractice));
-  zoomTraining = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTraining));
+  const zMin = isMobileLayout() ? ZOOM_MIN_MOBILE : ZOOM_MIN;
+  zoomPractice = Math.max(zMin, Math.min(ZOOM_MAX, zoomPractice));
+  zoomTraining = Math.max(zMin, Math.min(ZOOM_MAX, zoomTraining));
 
   const fit = updateCircleFitBox();
   // на мобильной раскладке svg спозиционирован абсолютно (left/top:50%),
   // поэтому его нужно сдвинуть на половину собственного размера
   const pre = isMobile ? 'translate(-50%,-50%) ' : '';
 
-  svg.style.transform = pre + `scale(${fit*zoomPractice/100})`;
+  // "Назови аккорд/лад" на телефоне: зум меньше 100% уже учтён в fit (см. l3NameZoomReflow)
+  const zpEff = (zoomPractice < 100 && l3NameZoomReflow()) ? 100 : zoomPractice;
+  svg.style.transform = pre + `scale(${fit*zpEff/100})`;
   svg.style.transformOrigin = 'center center';
 
   trainSvg.style.transform = pre + `scale(${fit*zoomTraining/100})`;
@@ -15663,8 +15689,6 @@ const dawVelocityInput = document.getElementById('dawVelocityInput');
 // верхний предел интервала между нотами (сек): дальше таймеры браузера
 // переполняются и срабатывают мгновенно
 const DAW_INTERVAL_MAX_SEC = 60;
-const dawFormatMidi1Btn = document.getElementById('dawFormatMidi1Btn');
-const dawFormatMidi2Btn = document.getElementById('dawFormatMidi2Btn');
 const dawOutputSelect = document.getElementById('dawOutputSelect');
 const dawPlayTogetherBtn = document.getElementById('dawPlayTogetherBtn');
 const dawPlaySequenceBtn = document.getElementById('dawPlaySequenceBtn');
@@ -15705,27 +15729,30 @@ function saveDawVelocity(){
 dawVelocityInput.addEventListener('change', saveDawVelocity);
 dawVelocityInput.addEventListener('blur', saveDawVelocity);
 
-// формат диапазона velocity (MIDI 1 / MIDI 2)
-function loadDawFormat(){
-  let saved = null;
-  try{ saved = localStorage.getItem(DAW_OUT_FORMAT_KEY); }catch(e){}
-  return (saved === '65536') ? '65536' : '127';
+// Формат выхода всегда MIDI 1: velocity от 1 до 127 (переключатель
+// "Формат выхода" убран по просьбе пользователя).
+const dawVelocityFormatValue = '127';
+try{ localStorage.removeItem(DAW_OUT_FORMAT_KEY); }catch(e){}
+
+/* Поля "Интервал между нотами" и "Velocity" есть в двух местах: в
+   "Обучении" (dawIntervalInput/dawVelocityInput — основные, из них
+   читаются значения) и в "Аккорды/Лады" (копии .dawIntervalCopy /
+   .dawVelocityCopy). Ввод в любое поле сразу переносится во все остальные
+   и сохраняется так же, как раньше. */
+function syncDawFieldCopies(main, copySelector, save){
+  const copies = Array.from(document.querySelectorAll(copySelector));
+  const all = [main].concat(copies);
+  copies.forEach(c => { c.value = main.value; });
+  all.forEach(f=>{
+    f.addEventListener('input', ()=>{ all.forEach(o => { if(o !== f) o.value = f.value; }); });
+    if(f !== main){
+      f.addEventListener('change', save);
+      f.addEventListener('blur', save);
+    }
+  });
 }
-// текущее значение формата ('127' или '65536'); кнопки — переключатель,
-// нажата всегда ровно одна из них (как ABC / до-ре-ми)
-let dawVelocityFormatValue = loadDawFormat();
-function applyDawFormatButtons(){
-  dawFormatMidi1Btn.classList.toggle('active', dawVelocityFormatValue === '127');
-  dawFormatMidi2Btn.classList.toggle('active', dawVelocityFormatValue === '65536');
-}
-function setDawVelocityFormat(value){
-  dawVelocityFormatValue = value;
-  applyDawFormatButtons();
-  try{ localStorage.setItem(DAW_OUT_FORMAT_KEY, dawVelocityFormatValue); }catch(e){}
-}
-applyDawFormatButtons();
-dawFormatMidi1Btn.addEventListener('click', ()=> setDawVelocityFormat('127'));
-dawFormatMidi2Btn.addEventListener('click', ()=> setDawVelocityFormat('65536'));
+syncDawFieldCopies(dawIntervalInput, '.dawIntervalCopy', saveDawInterval);
+syncDawFieldCopies(dawVelocityInput, '.dawVelocityCopy', saveDawVelocity);
 
 // нормализует введённую velocity (в диапазоне выбранного формата) в
 // стандартный MIDI-байт 1..127 для Note On/Off (0 зарезервирован под
