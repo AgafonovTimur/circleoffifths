@@ -327,12 +327,15 @@
   body.theme-t1 .topTabBtn{
     font-family:var(--btn-font);
     font-weight:400;
-    /* высота/отступы кнопок — как в файле ритма */
-    font-size:13px;
-    padding:6px 11px;
-    line-height:1.2;
-    background:linear-gradient(var(--btn-bg), var(--btn-bg-bottom));
-    border:1px solid var(--btn-border);
+    /* размер шрифта, отступы и высота кнопок — как в тёмной теме
+       (не задаются здесь); рамка нарисована тенью внутри кнопки,
+       чтобы не увеличивать её размер */
+    /* цвет фона задан отдельно от градиента: при уходе с этой темы
+       кнопка плавно перетекает в цвет новой темы, а не мигает */
+    background-color:var(--btn-bg);
+    background-image:linear-gradient(var(--btn-bg), var(--btn-bg-bottom));
+    border-color:transparent;
+    box-shadow:inset 0 0 0 1px var(--btn-border);
     border-radius:8px;
   }
   body.theme-t1 .ringBtn:hover:not(.disabled),
@@ -345,10 +348,12 @@
   body.theme-t1 .noteNamingBtn.active,
   body.theme-t1 .noteBtn.active,
   body.theme-t1 .topTabBtn.active{
-    background:linear-gradient(var(--accent-top), var(--accent-2));
+    background-color:var(--btn-active-bg);
+    background-image:linear-gradient(var(--accent-top), var(--accent-2));
     color:var(--btn-active-text);
     font-weight:700;
-    border-color:var(--accent-border);
+    border-color:transparent;
+    box-shadow:inset 0 0 0 1px var(--accent-border);
   }
   body.theme-t1 .ringBtn.active:hover,
   body.theme-t1 .noteNamingBtn.active:hover,
@@ -367,10 +372,11 @@
   body.theme-t4 .topTabBtn{
     font-family:var(--btn-font);
     font-weight:500;
-    font-size:13px;
-    padding:6px 11px;
-    line-height:1.2;
-    border:1px solid var(--btn-border);
+    /* размер шрифта, отступы и высота кнопок — как в тёмной теме
+       (не задаются здесь); рамка нарисована тенью внутри кнопки,
+       чтобы не увеличивать её размер */
+    border-color:transparent;
+    box-shadow:inset 0 0 0 1px var(--btn-border);
     border-radius:6px;
   }
   body.theme-t2 .ringBtn.active,
@@ -381,7 +387,8 @@
   body.theme-t4 .noteNamingBtn.active,
   body.theme-t4 .noteBtn.active,
   body.theme-t4 .topTabBtn.active{
-    border-color:var(--accent-border, var(--btn-active-bg));
+    border-color:transparent;
+    box-shadow:inset 0 0 0 1px var(--accent-border, var(--btn-active-bg));
   }
 
   /* строка выбора темы */
@@ -743,11 +750,20 @@
   }
   /* Широкая подсказка (список горячих клавиш) */
   #globalInfoTooltip.tipWide{
-    /* рамка как у меню настроек (#sidePanel) */
-    border:1px solid var(--menu-border);
-    max-width:min(560px, 94vw);
-    font-size:14px;
-    line-height:1.35;
+    max-width:min(1120px, 96vw);
+    width:min(1120px, 96vw);
+    font-size:18px;
+    line-height:1.4;
+    /* рамка — как у блоков меню настроек (.cofBox) */
+    border:1px solid var(--group-box-border, var(--menu-border));
+  }
+  /* Список горячих клавиш — в 3 колонки:
+     1) Везде + Ноты, 2) Обучение, 3) Аккорды/Лады + MIDI */
+  #globalInfoTooltip .tipCols{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:0 24px;
+    align-items:start;
   }
   .sidePanelPinOption{
     display:flex;
@@ -924,6 +940,19 @@
   }
   .topTabBtn.active:hover{
     background:var(--btn-active-hover-bg, #666);
+  }
+  /* Заголовок блока настроек со значком (i) в одной строке
+     ("Выберите ноты" во вкладке "Ноты", "Выберите аккорды" в "Аккорды/Лады") */
+  .headerWithTip{
+    position:relative;
+  }
+  /* значок стоит справа от текста и не сдвигает заголовок и блок под ним */
+  .headerWithTip > .infoIcon{
+    position:absolute;
+    left:100%;
+    top:50%;
+    transform:translateY(-50%);
+    margin-left:6px;
   }
   #level2TypeHeader{
     font-size:16px;
@@ -1202,6 +1231,10 @@
     margin-top:var(--train-inv-offset-y);
     display:flex;
     gap:var(--train-inv-btn-gap);
+    /* не больше 4 кнопок в ряду: 5-я и дальше переносятся во второй ряд */
+    flex-wrap:wrap;
+    width:max-content;
+    max-width:calc(var(--train-inv-btn-width) * 4 + var(--train-inv-btn-gap) * 3);
   }
   #trainInversionBtns .ringBtn{
     width:var(--train-inv-btn-width);
@@ -1264,6 +1297,10 @@
     width:min(100%, max(var(--mobile-piano-w, 100%), 300px));
     margin-left:0;
     justify-content:center;
+  }
+  /* больше 4 кнопок: по 4 в ряду, 5-я и дальше — во втором ряду */
+  body.is-mobile #trainInversionBtns.invMany .ringBtn{
+    flex:0 0 calc((100% - var(--train-inv-btn-gap) * 3) / 4);
   }
   body.is-mobile #trainInversionBtns .ringBtn{
     width:auto;
@@ -2718,7 +2755,7 @@
 
     <div id="notesPanel">
       <div id="level1Panel">
-        <div id="selectHeader" data-i18n="selectHeader">Выберите ноты</div>
+        <div id="selectHeader" class="headerWithTip"><span data-i18n="selectHeader">Выберите ноты</span><span class="infoIcon" data-tip-plain data-i18n-tip="tipSelectNotesRing" data-tip="Лучше отвечать на внешнем(мажорном) кольце - этот вариант проще, чем на внутреннем(минорном).&#10;&#10;При ответе на клавиатуре ПК\MIDI нажатая нота показывается на том кольце, на котором стоит вопрос. При ответе мышью нота проверяется там, где нажали.">i</span></div>
         <div class="cofBox cofBoxCol">
         <div id="selectButtons">
           <button class="ringBtn" data-ring="major" data-i18n="btnMajor">Мажор</button>
@@ -2831,7 +2868,7 @@
       </div>
 
       <div id="level2Panel" style="display:none">
-        <div id="selectHeader2" data-i18n="selectHeader">Выберите ноты</div>
+        <div id="selectHeader2" class="headerWithTip"><span data-i18n="selectHeader">Выберите ноты</span><span class="infoIcon" data-tip-plain data-i18n-tip="tipSelectNotesRing" data-tip="Лучше отвечать на внешнем(мажорном) кольце - этот вариант проще, чем на внутреннем(минорном).&#10;&#10;При ответе на клавиатуре ПК\MIDI нажатая нота показывается на том кольце, на котором стоит вопрос. При ответе мышью нота проверяется там, где нажали.">i</span></div>
         <div class="cofBox cofBoxCol">
         <div id="selectButtons2">
           <button class="ringBtn" data-ring="major" data-i18n="btnMajor">Мажор</button>
@@ -2848,7 +2885,7 @@
     </div>
 
     <div id="level3Panel" style="display:none">
-      <div id="level2TypeHeader" data-i18n="chordTypeHeader">Тип аккорда</div>
+      <div id="level2TypeHeader" class="headerWithTip"><span data-i18n="chordTypeHeader">Тип аккорда</span><span class="infoIcon" data-tip-plain data-i18n-tip="tipSelectChordsRing" data-tip="Лучше отвечать на внешнем(мажорном) кольце - этот вариант проще, чем на внутреннем(минорном).&#10;&#10;При ответе на клавиатуре ПК\MIDI аккорд показывается по схеме от того кольца, на котором нота вопроса выбрана в «Выберите ноты» (мажорного или минорного). Лады: если выбраны только ноты на минорном кольце - нажатые ноты показываются на минорном кольце, если выбрана хоть одна нота на мажорном кольце - на мажорном. При ответе мышью нота проверяется там, где нажали.">i</span></div>
       <div id="level2TypeButtons" class="cofBox">
         <div class="ringBtnRow rowStart">
           <button class="ringBtn" id="level3MajorBtn" type="button" data-chordtype="triadMaj" data-i18n="btnMajor">Мажор</button>
@@ -3061,7 +3098,7 @@
         <label id="level3PianoUnderRow"><input type="checkbox" id="level3PianoUnderCheckbox"><span data-i18n="pianoUnderNote">Клавиатура под нотой</span></label>
         <div id="level3InversionsRow">
           <span data-i18n="chooseInversion">Выбор обращения</span>
-          <span class="infoIcon" data-i18n-tip="tipInversions" data-tip="Обращения работают только для первого, второго и третьего обращений(если третье есть). Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipInversions" data-tip="Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@">i</span>
         </div>
         <div id="level3InvStyleRow" class="invStyleRow" style="margin-left:24px;">
           <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="level3InvStyleAccCheckbox"><span data-i18n="invStyleAcc">С бемолями\диезами</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
@@ -3142,12 +3179,6 @@
   <div id="trainingPanel" style="display:none">
       <div id="trainDisplayModeButtons" style="display:none">
        <div id="trainVariantChordBox" class="cofBox">
-        <!-- Язык интерфейса — самым первым пунктом, над "Выбором группы аккордов" -->
-        <div class="noteNamingSwitchRow" id="langSwitchRow">
-          <button type="button" class="noteNamingBtn" id="langRuBtn" data-lang="ru">Русский</button>
-          <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
-          <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
-        </div>
         <!-- "Выбор группы аккордов": подпись + (i) + 2 кнопки в одну строку.
              Бывший "Вариант 2" удалён — всегда показывается прежний
              "Вариант 1" (см. trainForceUIV1 в <script>). -->
@@ -3386,8 +3417,7 @@
              вида"); без клавиатуры обращение видно только на круге.
              Подпункты — схема круга: "С бемолями\диезами" (по умолчанию)
              или "Правильно", нажата всегда одна. -->
-        <div id="trainShowInversionsRow"><span data-i18n="chooseInversion">Выбор обращения</span>
-          <span class="infoIcon" data-i18n-tip="tipTrainInversions" data-tip="Обращения работают только для первого, второго и третьего обращений(если третье есть)">i</span></div>
+        <div id="trainShowInversionsRow"><span data-i18n="chooseInversion">Выбор обращения</span></div>
         <div id="trainInvStyleRow" class="invStyleRow" style="margin-left:24px;">
           <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleAccCheckbox"><span data-i18n="invStyleAcc">С бемолями\диезами</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleAcc" data-tip="Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже">i</span></span>
           <span class="invStyleItem"><label class="invStyleOption"><input type="checkbox" id="trainInvStyleCorrectCheckbox"><span data-i18n="invStyleCorrect">Правильно</span></label><span class="infoIcon" data-i18n-tip="tipInvStyleCorrect" data-tip="Точный вариант от первой ноты до последней">i</span></span>
@@ -3416,6 +3446,13 @@
           <button type="button" class="noteNamingBtn active" id="noteNamingAbcBtn" data-system="abc">ABC</button>
           <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege" data-i18n="noteNamingSolfege">До ре ми</button>
         </div>
+      </div>
+
+      <!-- Язык интерфейса — отдельной рамкой прямо над блоком MIDI -->
+      <div class="noteNamingSwitchRow cofBox" id="langSwitchRow">
+        <button type="button" class="noteNamingBtn" id="langRuBtn" data-lang="ru">Русский</button>
+        <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
+        <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
       </div>
 
       <div class="cofBoxTitle">MIDI</div>
@@ -3869,8 +3906,8 @@ function syncNoteNamingButtons(){
 
 /* =========================================================
    НАСТРОЙКА "Язык интерфейса": русский / English / 中文.
-   Переключатель — в настройках Обучения, над чекбоксом
-   "Показывать буквы аккорда под нотами" (#langSwitchRow).
+   Переключатель — в настройках Обучения, прямо над блоком
+   MIDI (#langSwitchRow).
    Меняет текст всех элементов с атрибутом data-i18n,
    без перезагрузки страницы. Выбор сохраняется в localStorage
    и применяется при следующем открытии.
@@ -3904,6 +3941,16 @@ const I18N = {
   btnMinor:            { ru:'Минор', en:'Minor', zh:'小调' },
   btnClearAll:         { ru:'Убрать все', en:'Clear all', zh:'全部清除' },
   chordTypeHeader:     { ru:'Выберите аккорды', en:'Choose chords', zh:'选择和弦' },
+  tipSelectNotesRing: {
+    ru:'Лучше отвечать на внешнем(мажорном) кольце - этот вариант проще, чем на внутреннем(минорном).\n\nПри ответе на клавиатуре ПК\\MIDI нажатая нота показывается на том кольце, на котором стоит вопрос. При ответе мышью нота проверяется там, где нажали.',
+    en:'It is better to answer on the outer (major) ring - this is easier than on the inner (minor) one.\n\nWhen answering with the PC keyboard\\MIDI, the pressed note is shown on the ring where the question is. When answering with the mouse, the note is checked where you clicked.',
+    zh:'最好在外圈（大调）作答 - 这比在内圈（小调）更简单。\n\n用电脑键盘\\MIDI作答时，按下的音符显示在题目所在的圈上。用鼠标作答时，在点击的位置进行检查。'
+  },
+  tipSelectChordsRing: {
+    ru:'Лучше отвечать на внешнем(мажорном) кольце - этот вариант проще, чем на внутреннем(минорном).\n\nПри ответе на клавиатуре ПК\\MIDI аккорд показывается по схеме от того кольца, на котором нота вопроса выбрана в «Выберите ноты» (мажорного или минорного). Лады: если выбраны только ноты на минорном кольце - нажатые ноты показываются на минорном кольце, если выбрана хоть одна нота на мажорном кольце - на мажорном. При ответе мышью нота проверяется там, где нажали.',
+    en:'It is better to answer on the outer (major) ring - this is easier than on the inner (minor) one.\n\nWhen answering with the PC keyboard\\MIDI, the chord is shown using the layout built from the ring where the question note is selected in «Select notes» (major or minor). Modes: if only notes on the minor ring are selected, pressed notes are shown on the minor ring; if at least one note on the major ring is selected - on the major ring. When answering with the mouse, the note is checked where you clicked.',
+    zh:'最好在外圈（大调）作答 - 这比在内圈（小调）更简单。\n\n用电脑键盘\\MIDI作答时，和弦按“选择音符”中题目音符所在圈（大调或小调）的图式显示。调式：如果只选择了小调圈上的音符，按下的音符显示在小调圈上；如果至少选择了一个大调圈上的音符，则显示在大调圈上。用鼠标作答时，在点击的位置进行检查。'
+  },
   modeTypeHeader:      { ru:'Выберите лады', en:'Choose modes', zh:'选择调式' },
   majMinChord:         { ru:'Мажор/Минор', en:'Major/Minor', zh:'大调/小调' },
   showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
@@ -3922,18 +3969,23 @@ const I18N = {
   inv1:                { ru:'Первое', en:'1st', zh:'第一' },
   inv2:                { ru:'Второе', en:'2nd', zh:'第二' },
   inv3:                { ru:'Третье', en:'3rd', zh:'第三' },
+  inv4:                { ru:'Четвёртое', en:'4th', zh:'第四' },
+  inv5:                { ru:'Пятое', en:'5th', zh:'第五' },
+  inv6:                { ru:'Шестое', en:'6th', zh:'第六' },
   // подпись под названием аккорда в центре круга (Аккорды/Лады)
   invLabel1:           { ru:'1е обращение', en:'1st inversion', zh:'第一转位' },
   invLabel2:           { ru:'2е обращение', en:'2nd inversion', zh:'第二转位' },
   invLabel3:           { ru:'3е обращение', en:'3rd inversion', zh:'第三转位' },
+  invLabel4:           { ru:'4е обращение', en:'4th inversion', zh:'第四转位' },
+  invLabel5:           { ru:'5е обращение', en:'5th inversion', zh:'第五转位' },
+  invLabel6:           { ru:'6е обращение', en:'6th inversion', zh:'第六转位' },
   tipInvStyleCorrect: { ru:'Точный вариант от первой ноты до последней', en:'Exact version from the first note to the last', zh:'从第一个音到最后一个音的精确版本' },
   tipInvStyleAcc: { ru:'Ноты расположены близко друг к другу чтобы проще запоминать, некоторые ноты заменены на ступень выше или ниже', en:'Notes are placed close to each other to make them easier to remember; some notes are replaced by a step higher or lower', zh:'音符彼此靠近排列，便于记忆；部分音符被替换为高一级或低一级' },
   tipInvStyleEasy: { ru:'Удобный вариант запоминания : мажор/минор всегда одинаковый для всех аккордов + добавочные ноты каждого аккорда (beta)', en:'Easy way to memorize: the major/minor triad is always the same for all chords + the added notes of each chord (beta)', zh:'便于记忆的版本：所有和弦的大/小三和弦始终相同 + 每个和弦的附加音 (beta)' },
-  tipTrainInversions: { ru:'Обращения работают только для первого, второго и третьего обращений(если третье есть)', en:'Inversions work only for the first, second and third inversions (if there is a third)', zh:'转位仅适用于第一、第二和第三转位（如果有第三转位）' },
   tipInversions: {
-    ru:'Обращения работают только для первого, второго и третьего обращений(если третье есть). Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@',
-    en:'Inversions work only for the first, second and third inversions (if there is a third). Press the notes in the order they appear in the inversion - @@otherwise it counts as a wrong note@@',
-    zh:'转位仅适用于第一、第二和第三转位（如果有第三转位）。必须按转位中的顺序依次弹奏音符 - @@否则将被判为错误音符@@'
+    ru:'Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@',
+    en:'Press the notes in the order they appear in the inversion - @@otherwise it counts as a wrong note@@',
+    zh:'必须按转位中的顺序依次弹奏音符 - @@否则将被判为错误音符@@'
   },
   chordGroupPick:      { ru:'Выбор группы аккордов', en:'Chord group selection', zh:'和弦组选择' },
   byArrows:            { ru:'Стрелками', en:'Arrows', zh:'箭头' },
@@ -4646,6 +4698,25 @@ function activeChordsL3(){
   });
 }
 
+/* Кольцо, на котором показывается нота, нажатая на клавиатуре ПК / MIDI
+   (лады во вкладке "Аккорды/Лады"): если в "Выберите ноты" отмечены
+   только ноты минорного кольца — минорное; если отмечена хоть одна нота
+   мажорного кольца — мажорное. Ответ мышью не меняется — проверяется
+   там, где нажали. */
+function keyboardAnswerRing(set){
+  return majors.some((_, i) => set['major-' + i]) ? 'major' : 'minor';
+}
+
+/* Аккорды во вкладке "Аккорды/Лады", ответ с клавиатуры ПК / MIDI: от
+   какого кольца строится схема, на которой показываются нажатые ноты —
+   от кольца, на котором нота вопроса выбрана в "Выберите ноты" (C при
+   "Минор" — Cm по схеме от мажорного кольца, Cm — от минорного). */
+function l3KeyboardSchemeRing(){
+  if(!currentL3) return 'major';
+  const r = currentL3.srcRing || currentL3.ring;
+  return r === 'minor' ? 'minor' : 'major';
+}
+
 // история последних выпавших нот (по буквам, без разделения на
 // мажор/минор), самая новая — в конце; хранится не больше 3 последних.
 let rootHistory = [];
@@ -4666,7 +4737,8 @@ function pickNewChord(){
   // >=4 включённых нот — не повторять текущую;
   // >=8 включённых нот — не повторять текущую и предыдущую;
   // >=12 включённых нот — не повторять текущую и 2 предыдущие.
-  const selCount = new Set(pool.map(c => rootOf(c.name))).size;
+  // число вариантов — сколько нот выбрано в "Выберите ноты" (C и Cm — 2)
+  const selCount = pool.length;
   let excludeCount = 0;
   if(selCount >= 12) excludeCount = 3;
   else if(selCount >= 8) excludeCount = 2;
@@ -4694,7 +4766,6 @@ function pickNewChord(){
 
 const FLASH_GREEN = 'var(--green-flash)';
 const FLASH_RED = 'var(--red-flash)';
-const FLASH_YELLOW = 'var(--yellow)';
 
 function flashWedge(ringName, index, color, duration){
   // Пока ячейки круга скрыты (настройка "Скрыть ячейки круга" в
@@ -6138,13 +6209,13 @@ let trainShowPiano = localStorage.getItem(TRAIN_SHOW_PIANO_KEY) !== '0';
    ========================================================= */
 const TRAIN_SHOW_INVERSIONS_KEY = 'circleTrainShowInversions';
 const TRAIN_INVERSION_KEY = 'circleTrainInversion';
-const INVERSION_BTN_I18N = ['invRoot','inv1','inv2','inv3'];
+const INVERSION_BTN_I18N = ['invRoot','inv1','inv2','inv3','inv4','inv5','inv6'];
 
 function loadInversionSet(key){
   let arr = null;
   try{ arr = JSON.parse(localStorage.getItem(key)); }catch(e){ arr = null; }
   if(!Array.isArray(arr)) return null;
-  const out = arr.map(v => parseInt(v, 10)).filter(v => v >= 0 && v <= 3);
+  const out = arr.map(v => parseInt(v, 10)).filter(v => v >= 0 && v <= 6);
   return out.length ? out : null;
 }
 
@@ -6244,17 +6315,17 @@ function maxInversionBlocks(rootNotes, invList){
 }
 
 // Сколько кнопок обращений показывать для текущего аккорда (основное +
-// обращения, максимум 4).
+// все обращения: столько же, сколько нот в аккорде).
 function trainInversionBtnCount(){
   if(trainModeType || !pressedTrainTonicRing) return 0;
   const formula = trainChordFormula(trainChordType, pressedTrainTonicRing);
-  return Math.min(formula ? formula.length : 3, 4);
+  return formula ? formula.length : 3;
 }
 
 // Ноты для клавиатуры в выбранном обращении — ровно один вариант
 // аккорда, ничего рядом не дорисовывается.
 function buildTrainInversionNotes(baseNotes){
-  const maxInv = Math.min(baseNotes.length, 4) - 1;
+  const maxInv = baseNotes.length - 1;
   // у этого аккорда такого обращения нет (было выбрано "третье", а
   // сейчас выбрано трезвучие) — сразу откатываемся к основному виду,
   // ДО отрисовки, чтобы клавиатура и активная кнопка совпадали
@@ -6281,6 +6352,7 @@ function updateTrainInversionButtons(){
   // "третье", а теперь выбрано трезвучие) — возвращаемся к основному виду
   if(trainInversion >= count) trainInversion = 0;
   trainInversionBtnsEl.style.display = 'flex';
+  trainInversionBtnsEl.classList.toggle('invMany', count > 4);
   while(trainInversionBtnsEl.firstChild) trainInversionBtnsEl.removeChild(trainInversionBtnsEl.firstChild);
   for(let i=0; i<count; i++){
     const btn = document.createElement('button');
@@ -6448,7 +6520,7 @@ function updateTrainPiano(){
     // все ноты — в одну октаву клавиатуры (блок 0), обращения не учитываются
     notes = notes.map(n => Object.assign({}, n, { rank:0 }));
   } else if(trainShowInversions && !trainModeType){
-    const invCount = Math.min(notes.length, 4);
+    const invCount = notes.length;
     minBlocks = maxInversionBlocks(notes, Array.from({length:invCount}, (_, i) => i));
     notes = buildTrainInversionNotes(notes);
   }
@@ -9714,7 +9786,7 @@ function drawTriadInversionArrow(from, to, color, markerId, arcState){
 function buildTriadInversionArrows(chordType, ring, tonicIndex, styleOverride){
   const n = trainChordFormula(chordType, ring).length;
   const invSel = trainShowInversions ? (trainInversion || 0) : 0;
-  const inv = Math.max(0, Math.min(invSel, Math.min(n, 4) - 1));
+  const inv = Math.max(0, Math.min(invSel, n - 1));
   const accOld = styleOverride === 'accOld';
   const plan = inversionPlan(chordType, ring, n, inv, accOld ? 'acc' : trainInvArrowStyle);
   if(!plan) return false;
@@ -10233,10 +10305,10 @@ let l3InvStyle = localStorage.getItem(L3_INV_STYLE_KEY) === 'correct' ? 'correct
 function saveL3Inversions(){ /* выбор обращений не сохраняется */ }
 
 // Сколько вариантов (основное + обращения) есть у данного типа аккорда,
-// но не больше 4 — как и в "Обучении".
+// (столько же, сколько нот в аккорде) — как и в "Обучении".
 function l3InversionCountFor(type, ring){
   const formula = trainChordFormula(type, ring);
-  return Math.min(formula ? formula.length : 3, 4);
+  return formula ? formula.length : 3;
 }
 
 /* Буквы нот аккорда в том порядке, в котором их нужно нажимать для
@@ -10292,7 +10364,7 @@ function l3MaxInversionCount(){
     const c = l3InversionCountFor(tp, 'major');
     if(c > max) max = c;
   });
-  return Math.min(max, 4);
+  return max;
 }
 
 // Обращения доступны, только когда загадываются аккорды: у ладов порядок
@@ -10342,7 +10414,8 @@ function renderL3InversionButtons(){
   if(l3Inversions.size === 0){ l3Inversions.add(0); changed = true; }
   if(changed) saveL3Inversions();
   while(level3InversionBtnsEl.firstChild) level3InversionBtnsEl.removeChild(level3InversionBtnsEl.firstChild);
-  level3InversionBtnsEl.style.gridTemplateColumns = 'repeat(' + count + ', 1fr)';
+  // не больше 4 кнопок в ряду: 5-я и дальше — во втором ряду
+  level3InversionBtnsEl.style.gridTemplateColumns = 'repeat(' + Math.min(count, 4) + ', 1fr)';
   for(let i=0; i<count; i++){
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -10452,6 +10525,83 @@ function l3NameRemember(kind, cell){
   if(l3NameHistory.length > 3) l3NameHistory.shift();
 }
 
+/* ===== "Аккорды/Лады" (обычный режим, не "Назови"): выбор вопроса без
+   повторов. Вопрос = тип аккорда (или лад) + нота. Число вариантов =
+   (выбрано типов аккордов или ладов) x (выбрано нот в "Выберите ноты"):
+   4 и больше — нынешний вопрос не выпадает следующим; 8 и больше — не
+   выпадают 2 последних; 12 и больше — 3 последних. Одинаковым считается
+   вопрос с тем же названием (тип + нота), с какого бы кольца он ни был
+   построен. История только в памяти. ===== */
+let l3QuestionHistory = [];
+
+function l3RepeatGap(variants){
+  if(variants >= 12) return 3;
+  if(variants >= 8) return 2;
+  if(variants >= 4) return 1;
+  return 0;
+}
+
+// Ноты, от которых строится тип аккорда (обычный режим). "Мажор"/"Минор":
+// каждая выбранная ячейка — отдельный вопрос, даже если две ячейки дают
+// один и тот же аккорд (C и Cm при "Минор" — Cm от мажорного кольца и Cm
+// от минорного): ячейка переносится на кольцо нужного наклонения, а
+// srcRing запоминает кольцо, на котором нота выбрана (от него строится
+// схема ответа с клавиатуры ПК / MIDI). Остальные типы — как раньше,
+// только с мажорного кольца (если там ничего не выбрано — с минорного).
+function l3ChordCandidates(type, pool){
+  const triadRing = l3TriadRingOf(type);
+  if(triadRing){
+    const out = [];
+    pool.forEach(c=>{
+      let index = c.index;
+      if(c.ring !== triadRing){
+        const pc = (c.ring === 'minor' ? minorsSemitone : majorsSemitone)[c.index];
+        index = (triadRing === 'minor' ? minorsSemitone : majorsSemitone).indexOf(pc);
+        if(index === -1) return;
+      }
+      out.push({ name: (triadRing === 'minor' ? minors : majors)[index],
+                 ring: triadRing, index, srcRing: c.ring });
+    });
+    return out;
+  }
+  const majorOnly = pool.filter(c => c.ring === 'major');
+  return (majorOnly.length > 0 ? majorOnly : pool)
+    .map(c => ({ name: c.name, ring: c.ring, index: c.index, srcRing: c.ring }));
+}
+
+// Ключ вопроса для истории повторов: тип + высота тоники.
+function l3QuestionKey(kind, cell){
+  const pc = (cell.ring === 'minor' ? minorsSemitone : majorsSemitone)[cell.index];
+  return kind + '|' + pc;
+}
+
+// kinds — выбранные типы (или лады), candFor(kind) — варианты нот для
+// типа. Сначала случайный тип (из тех, у которых остались варианты),
+// потом случайная нота. Если исключение недавних не оставляет ни одного
+// варианта, исключается меньше. Возвращает { kind, cell } или null.
+function l3PickQuestion(kinds, candFor, noteCount){
+  const byKind = kinds.map(k => ({ k, list: candFor(k) }));
+  if(!byKind.some(x => x.list.length)) return null;
+  // даже при малом числе вариантов нынешний вопрос по возможности не
+  // повторяется сразу же (как было и раньше)
+  let gap = Math.max(1, l3RepeatGap(kinds.length * noteCount));
+  for(; gap >= 0; gap--){
+    const recent = new Set(gap > 0 ? l3QuestionHistory.slice(-gap) : []);
+    const avail = byKind
+      .map(x => ({ k: x.k, list: x.list.filter(c => !recent.has(l3QuestionKey(x.k, c))) }))
+      .filter(x => x.list.length);
+    if(!avail.length) continue;
+    const pick = avail[Math.floor(Math.random() * avail.length)];
+    return { kind: pick.k, cell: pick.list[Math.floor(Math.random() * pick.list.length)] };
+  }
+  return null;
+}
+
+function l3RememberQuestion(kind, cell){
+  l3QuestionHistory.push(l3QuestionKey(kind, cell));
+  if(l3QuestionHistory.length > 3) l3QuestionHistory.shift();
+}
+
 function pickNewChordL3(){
   // Если выбран лад — подбираем ноту лада вместо аккорда (см.
   // pickNewModeL3/setLevel3ModeType выше pickNewChordL3 в файле).
@@ -10475,59 +10625,68 @@ function pickNewChordL3(){
     namePicked = l3NamePick(typesArr, t => l3NamePoolFor(t, pool), l3NameChordRepeatGap);
     if(namePicked) chordType = namePicked.kind;
   }
-  // "Мажор"/"Минор": ноты переносятся на нужное кольцо, дальше — 'triad'
-  const pickedKind = chordType;
-  const triadRing = l3TriadRingOf(chordType);
-  if(triadRing){
-    pool = l3PoolOnRing(pool, triadRing);
-    if(pool.length === 0) return;
-    chordType = 'triad';
-  }
-
-  // Только обычные трезвучия ('triad') различают мажор/минор в
-  // зависимости от кольца клика. Все остальные типы (sus2, sus4, 7,
-  // maj7, m7, m(Maj7), add9 и т.д.) — это просто аккорд от конкретной
-  // ноты и не зависят от "наклонения" тоники; минорное кольцо в круге
-  // лишь подписывает ту же ноту другим именем (Am вместо A). Если
-  // тонику для таких типов брать с минорного кольца, получаются
-  // задвоенные / несуществующие имена вроде "Amsus2" или "Amm7"
-  // вместо правильных "Asus2" / "Am7". Поэтому для всех типов, кроме
-  // 'triad', тонику берём только с мажорного кольца.
-  if(chordType !== 'triad'){
-    const majorOnly = pool.filter(c => c.ring === 'major');
-    // если пользователь оставил выбранными только ноты минорного
-    // кольца, откатываемся к полному пулу, чтобы не "зависнуть" без
-    // вопросов — но имя всё равно строится по чистой букве (см. ниже).
-    if(majorOnly.length > 0) pool = majorOnly;
-  }
-
-  // Порог здесь считается не по количеству выбранных нот на круге, а
-  // по количеству выбранных вариантов в меню аккорды/лады — каждый
-  // выбранный тип аккорда и каждый выбранный лад (level3ChordTypes +
-  // level3ModeTypes) считается за один вариант. При достижении порога
-  // (4/8/12 и более вариантов) из следующего выбора исключается только
-  // нынешний аккорд/лад — без истории из нескольких предыдущих, в
-  // отличие от меню нот.
-  const variantCountL3 = level3ChordTypes.size + level3ModeTypes.size;
-  if(namePicked){
-    // в режиме "Назови" нота уже выбрана с учётом истории
-  } else if(variantCountL3 >= 4 && currentL3 && pool.length > 1){
-    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
-  } else if(currentL3 && pool.length > 1){
-    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
-  }
-
+  // Обычный режим: вопрос выбирается без повторов (см. l3PickQuestion).
   let chosen;
-  if(namePicked){
-    chosen = namePicked.cell;
+  if(!l3NameMode){
+    const q = l3PickQuestion(typesArr, t => l3ChordCandidates(t, pool), countSelected(selectedNotesL3));
+    if(!q) return;
+    chosen = q.cell;
+    chordType = l3TriadRingOf(q.kind) ? 'triad' : q.kind;
+    l3RememberQuestion(q.kind, chosen);
   } else {
-    const weight = 1 / pool.length;
-    let r = Math.random();
-    let idx = Math.floor(r / weight);
-    if(idx >= pool.length) idx = pool.length - 1;
-    chosen = pool[idx];
+    // "Мажор"/"Минор": ноты переносятся на нужное кольцо, дальше — 'triad'
+    const pickedKind = chordType;
+    const triadRing = l3TriadRingOf(chordType);
+    if(triadRing){
+      pool = l3PoolOnRing(pool, triadRing);
+      if(pool.length === 0) return;
+      chordType = 'triad';
+    }
+
+    // Только обычные трезвучия ('triad') различают мажор/минор в
+    // зависимости от кольца клика. Все остальные типы (sus2, sus4, 7,
+    // maj7, m7, m(Maj7), add9 и т.д.) — это просто аккорд от конкретной
+    // ноты и не зависят от "наклонения" тоники; минорное кольцо в круге
+    // лишь подписывает ту же ноту другим именем (Am вместо A). Если
+    // тонику для таких типов брать с минорного кольца, получаются
+    // задвоенные / несуществующие имена вроде "Amsus2" или "Amm7"
+    // вместо правильных "Asus2" / "Am7". Поэтому для всех типов, кроме
+    // 'triad', тонику берём только с мажорного кольца.
+    if(chordType !== 'triad'){
+      const majorOnly = pool.filter(c => c.ring === 'major');
+      // если пользователь оставил выбранными только ноты минорного
+      // кольца, откатываемся к полному пулу, чтобы не "зависнуть" без
+      // вопросов — но имя всё равно строится по чистой букве (см. ниже).
+      if(majorOnly.length > 0) pool = majorOnly;
+    }
+
+    // Порог здесь считается не по количеству выбранных нот на круге, а
+    // по количеству выбранных вариантов в меню аккорды/лады — каждый
+    // выбранный тип аккорда и каждый выбранный лад (level3ChordTypes +
+    // level3ModeTypes) считается за один вариант. При достижении порога
+    // (4/8/12 и более вариантов) из следующего выбора исключается только
+    // нынешний аккорд/лад — без истории из нескольких предыдущих, в
+    // отличие от меню нот.
+    const variantCountL3 = level3ChordTypes.size + level3ModeTypes.size;
+    if(namePicked){
+      // в режиме "Назови" нота уже выбрана с учётом истории
+    } else if(variantCountL3 >= 4 && currentL3 && pool.length > 1){
+      pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
+    } else if(currentL3 && pool.length > 1){
+      pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
+    }
+
+    if(namePicked){
+      chosen = namePicked.cell;
+    } else {
+      const weight = 1 / pool.length;
+      let r = Math.random();
+      let idx = Math.floor(r / weight);
+      if(idx >= pool.length) idx = pool.length - 1;
+      chosen = pool[idx];
+    }
+    if(l3NameMode) l3NameRemember(pickedKind, chosen);
   }
-  if(l3NameMode) l3NameRemember(pickedKind, chosen);
 
   // Для triad — обычное имя с кольца ("C" / "Am"). Для всех остальных
   // типов — только буква без "m" (на случай отката к минорному кольцу
@@ -10541,6 +10700,9 @@ function pickNewChordL3(){
   currentL3 = {
     ring: chosen.ring,
     index: chosen.index,
+    // кольцо, на котором нота вопроса выбрана в "Выберите ноты" (от него
+    // строится схема ответа с клавиатуры ПК / MIDI, см. l3KeyboardSchemeRing)
+    srcRing: chosen.srcRing || chosen.ring,
     chordType: chordType,
     inversion: inversionL3,
     order: !l3NameMode ? l3ChordOrderLetters(chosen.ring, chosen.index, chordType, inversionL3) : null,
@@ -10713,11 +10875,14 @@ function pickNewModeL3(){
   let pool = activeChordsL3();
   if(pool.length === 0) return;
 
-  // Лад — это просто нота, без наклонения (мажор/минор), поэтому тонику
-  // берём только с мажорного кольца — та же логика, что и для типов
-  // аккорда, отличных от 'triad' (см. pickNewChordL3 выше).
-  const majorOnly = pool.filter(c => c.ring === 'major');
-  if(majorOnly.length > 0) pool = majorOnly;
+  // Обычный режим: каждая выбранная ячейка — отдельный вопрос, лад
+  // строится на кольце этой ячейки (C — C мажор на мажорном кольце, Am —
+  // A мажор на минорном, цепочкой от ячейки Am). "Назови аккорд/лад" —
+  // как раньше: тоника только с мажорного кольца.
+  if(l3NameMode){
+    const majorOnly = pool.filter(c => c.ring === 'major');
+    if(majorOnly.length > 0) pool = majorOnly;
+  }
 
   // Тот же принцип, что и в pickNewChordL3: порог считается по
   // количеству выбранных вариантов в меню аккорды/лады (типы аккордов +
@@ -10728,24 +10893,16 @@ function pickNewModeL3(){
   const namePicked = l3NameMode ? l3NamePick(modesArr, () => pool, l3NameModeRepeatGap) : null;
   if(namePicked) modeType = namePicked.kind;
 
-  const variantCountL3 = level3ChordTypes.size + level3ModeTypes.size;
-  if(namePicked){
-    // нота уже выбрана с учётом истории
-  } else if(variantCountL3 >= 4 && currentL3 && pool.length > 1){
-    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
-  } else if(currentL3 && pool.length > 1){
-    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
-  }
-
   let chosen;
   if(namePicked){
     chosen = namePicked.cell;
   } else {
-    const weight = 1 / pool.length;
-    let r = Math.random();
-    let idx = Math.floor(r / weight);
-    if(idx >= pool.length) idx = pool.length - 1;
-    chosen = pool[idx];
+    // без повторов: лад + нота (см. l3PickQuestion)
+    const q = l3PickQuestion(modesArr, () => pool, countSelected(selectedNotesL3));
+    if(!q) return;
+    modeType = q.kind;
+    chosen = q.cell;
+    l3RememberQuestion(q.kind, chosen);
   }
   if(l3NameMode) l3NameRemember(modeType, chosen);
   const rootLetter = rootOf(chosen.name);
@@ -10890,8 +11047,7 @@ function l3AccCellForLetter(letter){
 }
 
 /* Цвет вспышки для ответа буквой letter: неверная нота — красный;
-   верная — зелёный (для лада зелёный только у тоники, остальные ноты
-   жёлтые, как и раньше). Вынесено отдельно, т.к. одну и ту же проверку
+   верная — зелёный (и для аккорда, и для лада). Вынесено отдельно, т.к. одну и ту же проверку
    используют И клик по кругу (onWedgeClickLevel3), И клик по
    клавиатуре-подсказке справа (onL3PianoKeyClick). */
 function l3AnswerFlashColor(letter){
@@ -10900,9 +11056,7 @@ function l3AnswerFlashColor(letter){
   // обращения нота — всё остальное красное, даже если нота в аккорде есть.
   const expected = l3ExpectedLetter();
   if(expected && letter !== expected) return FLASH_RED;
-  return currentL3.modeType
-    ? (letter === currentL3.rootLetter ? FLASH_GREEN : FLASH_YELLOW)
-    : FLASH_GREEN;
+  return FLASH_GREEN;
 }
 
 /* Засчитывает ноту letter как ответ (без визуальной вспышки — её рисует
@@ -11449,9 +11603,8 @@ function onWedgeClickLevel3(e){
     letter = currentL3.accAliases.get(raiseKey).letter;
   }
 
-  // Для лада: тоника — зелёным, остальные верные ноты — цветом терции
-  // (жёлтый). Для аккорда поведение прежнее — всё зелёным. Неверная
-  // нота — красным (см. l3AnswerFlashColor выше).
+  // Верная нота — зелёным (аккорд и лад), неверная — красным
+  // (см. l3AnswerFlashColor выше).
   l3LastWedgeAnswerColor = l3AnswerFlashColor(letter);
   flashWedge(ring, index, l3LastWedgeAnswerColor, 300);
   l3RegisterAnswer(letter);
@@ -11596,7 +11749,8 @@ function pickNewChordL2(){
   if(pool.length === 0){ currentL2 = null; return; }
   const prev = currentL2;
 
-  const selCount = new Set(pool.map(c => rootOf(c.name))).size;
+  // число вариантов — сколько нот выбрано в "Выберите ноты" (C и Cm — 2)
+  const selCount = pool.length;
   let excludeCount = 0;
   if(selCount >= 12) excludeCount = 3;
   else if(selCount >= 8) excludeCount = 2;
@@ -12032,7 +12186,7 @@ function trainArrowSchemeCells(ring, tonicIndex){
   const formula = trainChordFormula(trainChordType, ring);
   if(!formula) return null;
   const n = formula.length;
-  const inv = Math.max(0, Math.min(trainInversion || 0, Math.min(n, 4) - 1));
+  const inv = Math.max(0, Math.min(trainInversion || 0, n - 1));
   const plan = inversionPlan(trainChordType, ring, n, inv, trainInvArrowStyle);
   if(!plan) return null;
   return inversionPlanCells(plan, trainChordType, ring, tonicIndex);
@@ -14136,6 +14290,9 @@ window.addEventListener('resize', ()=>{
 // Клик/тап по затемнению фона — закрыть настройки (общее для десктопа
 // и мобильной версии — "тап вне настроек").
 sidePanelBackdrop.addEventListener('click', () => {
+  // пока открыта подсказка первого входа (до нажатия "Хорошо") —
+  // клик вне настроек их не закрывает (закрыть можно правой кнопкой)
+  if(window.cofTutorialActive) return;
   setSidePanelOpen(false);
 });
 
@@ -14619,8 +14776,8 @@ function handleNoteHotkey(e){
     return handleNoteHotkeyLevel2(e);
   }
 
-  // "Аккорды/Лады", аккорды: ответ всегда на мажорном кольце по выбранной
-  // схеме, как и с MIDI (см. l3KeyboardAnswer), без цикла мажор/минор.
+  // "Аккорды/Лады", аккорды: ответ по выбранной схеме от кольца вопроса,
+  // как и с MIDI (см. l3KeyboardAnswer), без цикла мажор/минор.
   if(appMode === 'practice' && practiceLevel === 3 && !l3NameMode && currentL3
      && currentL3.chordType && !currentL3.modeType){
     let pc;
@@ -14633,8 +14790,8 @@ function handleNoteHotkey(e){
     }
   }
 
-  // "Аккорды/Лады", лады: ответ всегда на мажорном кольце, без цикла
-  // мажор/минор (повторное нажатие той же клавиши — снова мажорное кольцо).
+  // "Аккорды/Лады", лады: ответ на кольце, на котором построен лад
+  // вопроса, без цикла мажор/минор.
   if(appMode === 'practice' && practiceLevel === 3 && !l3NameMode && currentL3
      && currentL3.modeType){
     let pc;
@@ -14643,9 +14800,11 @@ function handleNoteHotkey(e){
     else if(HOTKEY_LETTER[e.code]) pc = majorsSemitone[majors.indexOf(HOTKEY_LETTER[e.code])];
     if(pc === undefined) return false;
     if(flatModePending) setFlatModePending(false);
-    const idx = majorsSemitone.indexOf(pc);
+    // кольцо — то, на котором построен лад вопроса
+    const ring = currentL3.ring === 'minor' ? 'minor' : 'major';
+    const idx = (ring === 'major' ? majorsSemitone : minorsSemitone).indexOf(pc);
     if(idx === -1) return false;
-    clickWedgeByRing('major', idx);
+    clickWedgeByRing(ring, idx);
     return true;
   }
 
@@ -14974,7 +15133,10 @@ function l3KeyboardSchemeCells(schemeRing){
    (l3KeyboardSchemeCells), неверная — красная вспышка на мажорном
    кольце. Возвращает true, если нажатие обработано. */
 function l3KeyboardAnswer(pc, schemeRing){
-  const sRing = schemeRing === 'minor' ? 'minor' : 'major';
+  // Кольцо зафиксировано колесом Pitch Bend — схема от него, иначе — по
+  // вопросу и выбранным нотам (см. l3KeyboardSchemeRing).
+  const sRing = (schemeRing === 'major' || schemeRing === 'minor')
+    ? schemeRing : l3KeyboardSchemeRing();
   const cells = l3KeyboardSchemeCells(sRing);
   if(!cells) return false;
   const letter = rootOf(noteNames[pc]);
@@ -15088,7 +15250,7 @@ function handleMidiNoteInner(pc){
   // после перезагрузки снова мажорное.
   if(appMode === 'practice' && practiceLevel === 3
      && currentL3 && currentL3.chordType && !currentL3.modeType){
-    if(l3KeyboardAnswer(pc, midiPitchbendRingLock === 'minor' ? 'minor' : 'major')) return;
+    if(l3KeyboardAnswer(pc, midiPitchbendRingLock)) return;
   }
 
   // Pitch Bend отклонён от центра — кольцо зафиксировано, обычный цикл
@@ -15111,12 +15273,14 @@ function handleMidiNoteInner(pc){
     return;
   }
 
-  // "Аккорды/Лады", лады: без цикла мажор/минор — всегда мажорное кольцо
-  // (если колесом Pitch Bend выбрано кольцо, срабатывает оно — см. выше).
+  // "Аккорды/Лады", лады: без цикла мажор/минор — кольцо, на котором
+  // построен лад вопроса (если колесом Pitch Bend выбрано кольцо, срабатывает оно — см. выше).
   if(appMode === 'practice' && practiceLevel === 3 && currentL3 && currentL3.modeType){
-    const idx = majorsSemitone.indexOf(pc);
+    // кольцо — то, на котором построен лад вопроса
+    const ring = currentL3.ring === 'minor' ? 'minor' : 'major';
+    const idx = (ring === 'major' ? majorsSemitone : minorsSemitone).indexOf(pc);
     if(idx === -1) return;
-    clickWedgeByRing('major', idx);
+    clickWedgeByRing(ring, idx);
     return;
   }
 
@@ -15310,6 +15474,32 @@ allMidiInputCountSelects().forEach(sel => {
   });
 });
 
+// Выбранные MIDI-входы (по строкам) запоминаются: после перезагрузки
+// страницы при нажатии "Подключить MIDI" сразу подставляются они
+// (ищем по id, если не нашли — по имени устройства).
+const MIDI_INPUT_PORTS_KEY = 'circleOfFifths_midiInputPorts_v1';
+function loadSavedMidiInputPorts(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(MIDI_INPUT_PORTS_KEY) || 'null'); }catch(e){}
+  return Array.isArray(saved) ? saved : [];
+}
+function saveMidiInputPorts(container){
+  if(!midiAccess || !container) return;
+  const inputs = [...midiAccess.inputs.values()];
+  const list = [...container.querySelectorAll('.midiInputPortSelect')].map(sel => {
+    const inp = inputs.find(i => i.id === sel.value);
+    return inp ? { id: inp.id, name: inp.name } : null;
+  });
+  try{ localStorage.setItem(MIDI_INPUT_PORTS_KEY, JSON.stringify(list)); }catch(e){}
+}
+function findSavedMidiInputId(saved, inputs){
+  if(!saved) return null;
+  const byId = inputs.find(i => i.id === saved.id);
+  if(byId) return byId.id;
+  const byName = inputs.find(i => i.name === saved.name);
+  return byName ? byName.id : null;
+}
+
 function populateMidiSelect(){
   // Без подключённой MIDI-клавиатуры midiAccess ещё null (доступ запрашивается
   // отдельно, кнопкой) — раньше это падало с TypeError при любом действии,
@@ -15325,7 +15515,12 @@ function populateMidiSelect(){
   // после ручного выбора) — иначе используем вход по порядку.
   const firstContainer = document.querySelector('.midiInputSelectsContainer');
   const existingSelects = firstContainer ? firstContainer.querySelectorAll('.midiInputPortSelect') : [];
-  const desiredIds = [...existingSelects].map(sel => sel.value).filter(v => v);
+  let desiredIds = [...existingSelects].map(sel => sel.value).filter(v => v);
+  // Первое подключение после загрузки страницы (в строках ещё ничего не
+  // выбрано) — берём сохранённый ранее выбор входов.
+  if(desiredIds.length === 0){
+    desiredIds = loadSavedMidiInputPorts().map(p => findSavedMidiInputId(p, inputs));
+  }
 
   allMidiInputContainers().forEach(container => {
     const selects = container.querySelectorAll('.midiInputPortSelect');
@@ -15382,6 +15577,7 @@ document.addEventListener('change', (e)=>{
       if(otherSelects[idx]) otherSelects[idx].value = e.target.value;
     });
   }
+  saveMidiInputPorts(container);
   bindAllMidiInputs();
 });
 
@@ -16184,7 +16380,7 @@ function computeTrainPlayNotes(){
   const base = (typeof computeTrainPianoNotes === 'function') ? computeTrainPianoNotes() : null;
   if(!base || base.length === 0) return base;
   if(!trainCompactPiano && trainShowInversions && !trainModeType){
-    const maxInv = Math.min(base.length, 4) - 1;
+    const maxInv = base.length - 1;
     const inv = Math.max(0, Math.min(trainInversion || 0, maxInv));
     if(inv > 0) return invertTrainNotes(base, inv, 0);
   }
@@ -16452,7 +16648,23 @@ if(circleIsFirstLaunch){
     // data-tip-plain — текст как есть, без красной подсветки частей
     // (список горячих клавиш)
     if(icon.hasAttribute('data-tip-plain')){
-      tip.textContent = text;
+      if(icon.hasAttribute('data-tip-wide')){
+        // список горячих клавиш: блоки через пустую строку раскладываем
+        // в 3 колонки — [Везде, Ноты], [Обучение], [остальное]
+        var parts = text.split(/\n\s*\n/);
+        var cols = [parts.slice(0, 2), parts.slice(2, 3), parts.slice(3)];
+        tip.textContent = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'tipCols';
+        cols.forEach(function(c){
+          var d = document.createElement('div');
+          d.textContent = c.join('\n\n');
+          wrap.appendChild(d);
+        });
+        tip.appendChild(wrap);
+      } else {
+        tip.textContent = text;
+      }
       tip.style.display = 'block';
       positionTip(icon);
       return;
@@ -16676,8 +16888,8 @@ if(circleIsFirstLaunch){
 <script>
 (function(){
   var TUTORIAL_SHOWN_KEY = 'circleTutorialShown';
-  var AUTO_SCROLL_DISTANCE = 180; // px — насколько панель съезжает вниз при показе
   var AUTO_SCROLL_DELAY = 700;    // ms — пауза перед автопрокруткой
+  var AUTO_SCROLL_EDGE_GAP = 10;  // px — отступ от нижнего края окна настроек до блока, на котором останавливается прокрутка
 
   // Тексты окна на 3 языках (переключаются вместе с языком приложения)
   try{
@@ -16730,19 +16942,38 @@ if(circleIsFirstLaunch){
     requestAnimationFrame(step);
   }
 
+  // Положение прокрутки, при котором нижний край элемента el стоит
+  // у нижнего края видимой части окна настроек (с отступом EDGE_GAP).
+  function scrollTopForBottom(el, max){
+    var pr = sidePanel.getBoundingClientRect();
+    var bottom = el.getBoundingClientRect().bottom - pr.top - sidePanel.clientTop + sidePanel.scrollTop;
+    var t = bottom + AUTO_SCROLL_EDGE_GAP - sidePanel.clientHeight;
+    return Math.max(0, Math.min(max, t));
+  }
+  // длительность анимации зависит от расстояния, чтобы длинная прокрутка не была рывком
+  function scrollMs(dist){ return Math.max(700, Math.min(2000, Math.abs(dist) * 0.9)); }
+
+  // Вниз — пока не станет видна нижняя часть блока MIDI (кнопка
+  // "Подключить MIDI"), затем вверх — пока самым нижним видимым
+  // блоком не станет выбор языка.
   function autoScrollDemo(){
     var max = sidePanel.scrollHeight - sidePanel.clientHeight;
     if(max <= 0) return;
-    var start = sidePanel.scrollTop;
-    var down = Math.min(max, start + AUTO_SCROLL_DISTANCE);
-    animateScroll(down, 800, function(){
-      setTimeout(function(){ animateScroll(start, 700); }, 450);
+    var midiBox = document.getElementById('midiPanel');
+    var langBox = document.getElementById('langSwitchRow');
+    if(!midiBox || !langBox || !midiBox.offsetParent || !langBox.offsetParent) return;
+    var down = scrollTopForBottom(midiBox, max);
+    var up = scrollTopForBottom(langBox, max);
+    animateScroll(down, scrollMs(down - sidePanel.scrollTop), function(){
+      setTimeout(function(){ animateScroll(up, scrollMs(down - up)); }, 450);
     });
   }
 
   function show(){
     if(typeof isMobile !== 'undefined' && isMobile) return; // только на ПК
     if(!isSidePanelOpen()) setSidePanelOpen(true);
+    window.cofTutorialActive = true;
+    document.addEventListener('contextmenu', onTutContextMenu);
     applyTexts();
     requestAnimationFrame(function(){
       // Строка про прокрутку нужна только если панель действительно листается
@@ -16757,8 +16988,19 @@ if(circleIsFirstLaunch){
 
   function onResize(){ if(box.style.display === 'block') position(); }
 
+  // Пока подсказка открыта: правая кнопка мыши вне окна настроек
+  // закрывает настройки, сама подсказка остаётся (её закрывает только "Хорошо").
+  function onTutContextMenu(e){
+    if(!window.cofTutorialActive || !isSidePanelOpen()) return;
+    if(sidePanel.contains(e.target)) return;
+    e.preventDefault();
+    setSidePanelOpen(false);
+  }
+
   okBtn.addEventListener('click', function(){
     try{ localStorage.setItem(TUTORIAL_SHOWN_KEY, '1'); }catch(e){}
+    window.cofTutorialActive = false;
+    document.removeEventListener('contextmenu', onTutContextMenu);
     box.classList.remove('show');
     window.removeEventListener('resize', onResize);
     setTimeout(function(){ box.style.display = 'none'; }, 260);
