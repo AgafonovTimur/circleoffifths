@@ -15283,6 +15283,8 @@ function fitTrainModCenterText(){
   c.l2.style.fill = 'var(--mod-k2-text)';   // style, т.к. CSS .trainModCenter задаёт fill
   fitLine(c.l2, 18, short=>{ c.l2.textContent = short ? d.k2.shortName : d.k2.name; });
   fitLine(c.l3, 14, ()=>{ c.l3.textContent = t('trainModCount') + d.count; });
+  // "Общих аккордов: N" — зелёным (как общие ячейки), если общих нет — обычным цветом текста
+  c.l3.style.fill = d.count > 0 ? 'var(--green)' : '';
 }
 
 function renderTrainMod(){
@@ -15373,6 +15375,7 @@ function renderTrainMod(){
       const tr = document.createElement('tr');
       const tdName = document.createElement('td');
       setNoteText(tdName, c.name);
+      tdName.style.color = 'var(--green)';   // общий аккорд — зелёным, как его ячейка на круге
       const td1 = document.createElement('td');
       td1.textContent = c.d1; td1.style.color = 'var(--mod-k1-text)';
       const td2 = document.createElement('td');
